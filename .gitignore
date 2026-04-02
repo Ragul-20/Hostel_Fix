@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv
+venv/
+env/
+
+# Database (using Render PostgreSQL — no local DB needed)
+*.sqlite3
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (keep folder, ignore files)
+static/uploads/*
+!static/uploads/.gitkeep
