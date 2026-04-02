@@ -13,19 +13,15 @@ app = Flask(__name__, static_folder='static')
 
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL:
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-    }
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "app.sqlite3")
-    print("WARNING: Using SQLite database - data will not persist on server restart!")
+DATABASE_URL = "postgresql://hostel:zzT9cTpUJqWdGcsv6XAc6vV1OIGkQ9mh@dpg-d76v5qlm5p6s73a6bhfg-a/hostel_complaints"
 
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
+
+print("[HOSTEL APP] Connected to PostgreSQL database")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 app.config["SESSION_COOKIE_SECURE"] = False
