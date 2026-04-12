@@ -126,7 +126,6 @@
     .pri-high { background: rgba(239,68,68,0.1);   color: #f87171; }
     .cat-tag  { font-size: 11px; background: rgba(255,255,255,0.06); padding: 3px 9px; border-radius: 6px; white-space: nowrap; }
  
-    /* ── NEW: Hostel & Block badges ── */
     .hostel-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
     .hostel-boys  { background: rgba(21,101,224,0.2); color: #93c5fd; border: 1px solid rgba(21,101,224,0.35); }
     .hostel-girls { background: rgba(236,72,153,0.2); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.35); }
@@ -394,7 +393,7 @@
     </div>
   </div>
  
-  <!-- ── BLOCK-WISE ANALYTICS ── -->
+  <!-- BLOCK-WISE ANALYTICS -->
   <div class="block-section" id="blockSection">
     <div class="sec-label">Block-Wise Complaint Analysis</div>
     <div class="block-chart-row">
@@ -414,7 +413,6 @@
         </div>
       </div>
     </div>
- 
     <!-- BLOCK TAB SELECTOR -->
     <div class="block-tabs" id="blockTabRow">
       <button class="block-tab block-tab-all active" data-block="all" onclick="selectBlock(this,'all')">
@@ -429,7 +427,7 @@
     </div>
   </div>
  
-  <!-- ── ADMIN TABLE (with Hostel + Block columns) ── -->
+  <!-- ADMIN TABLE -->
   <div id="complaints" style="margin-top:8px;">
     <div class="sec-label">All Student Complaints</div>
     <div class="tbl-card">
@@ -452,17 +450,9 @@
         <table id="complaintTable">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Student</th>
-              <th>Category</th>
-              <th>Description</th>
-              <th>Room No.</th>
-              <th>Hostel</th><!-- ← NEW -->
-              <th>Block</th> <!-- ← NEW -->
-              <th>Priority</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>#</th><th>Student</th><th>Category</th><th>Description</th>
+              <th>Room No.</th><th>Hostel</th><th>Block</th>
+              <th>Priority</th><th>Date</th><th>Status</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -482,25 +472,15 @@
                   {% if c.image_filename %}<a class="photo-link" href="{{ url_for('static', filename='uploads/' ~ c.image_filename) }}" target="_blank">🖼 Photo</a>{% endif %}
                 </td>
                 <td style="font-weight:600;white-space:nowrap;">{{ c.room_number }}</td>
-                <!-- Hostel Type -->
                 <td>
                   {% if c.hostel_type %}
-                    {% if c.hostel_type|lower == 'boys' %}
-                      <span class="hostel-badge hostel-boys">♂ Boys</span>
-                    {% else %}
-                      <span class="hostel-badge hostel-girls">♀ Girls</span>
-                    {% endif %}
-                  {% else %}
-                    <span class="nil-val">—</span>
-                  {% endif %}
+                    {% if c.hostel_type|lower == 'boys' %}<span class="hostel-badge hostel-boys">♂ Boys</span>
+                    {% else %}<span class="hostel-badge hostel-girls">♀ Girls</span>{% endif %}
+                  {% else %}<span class="nil-val">—</span>{% endif %}
                 </td>
-                <!-- Block -->
                 <td>
-                  {% if c.block %}
-                    <span class="block-badge">{{ c.block }}</span>
-                  {% else %}
-                    <span class="nil-val">—</span>
-                  {% endif %}
+                  {% if c.block %}<span class="block-badge">{{ c.block }}</span>
+                  {% else %}<span class="nil-val">—</span>{% endif %}
                 </td>
                 <td>
                   {% if c.priority == 'High' %}<span class="pri-badge pri-high">🔴 High</span>
@@ -536,7 +516,6 @@
  
 {% else %}
 <!-- ═══ STUDENT VIEW ════════════════════════════════════════════════════════ -->
-  <!-- Student Personal Summary Banner -->
   <div class="student-banner" style="margin-top:28px;">
     <div class="sb-avatar">👤</div>
     <div class="sb-info">
@@ -544,22 +523,10 @@
       <div class="sb-email">{{ email }} &nbsp;·&nbsp; <span style="color:#ffd700;font-weight:600;">Student</span></div>
     </div>
     <div class="sb-stats">
-      <div class="sb-stat">
-        <div class="sb-stat-n">{{ stats.active }}</div>
-        <div class="sb-stat-l">My Total</div>
-      </div>
-      <div class="sb-stat">
-        <div class="sb-stat-n orange">{{ stats.pending }}</div>
-        <div class="sb-stat-l">Pending</div>
-      </div>
-      <div class="sb-stat">
-        <div class="sb-stat-n sky">{{ stats.in_progress }}</div>
-        <div class="sb-stat-l">In Progress</div>
-      </div>
-      <div class="sb-stat">
-        <div class="sb-stat-n green">{{ stats.resolved }}</div>
-        <div class="sb-stat-l">Resolved</div>
-      </div>
+      <div class="sb-stat"><div class="sb-stat-n">{{ stats.active }}</div><div class="sb-stat-l">My Total</div></div>
+      <div class="sb-stat"><div class="sb-stat-n orange">{{ stats.pending }}</div><div class="sb-stat-l">Pending</div></div>
+      <div class="sb-stat"><div class="sb-stat-n sky">{{ stats.in_progress }}</div><div class="sb-stat-l">In Progress</div></div>
+      <div class="sb-stat"><div class="sb-stat-n green">{{ stats.resolved }}</div><div class="sb-stat-l">Resolved</div></div>
     </div>
   </div>
   <div class="student-grid" style="margin-top:16px;">
@@ -582,15 +549,8 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Room No.</th>
-                <th>Hostel</th><!-- ← NEW -->
-                <th>Block</th> <!-- ← NEW -->
-                <th>Priority</th>
-                <th>Date</th>
-                <th>Status</th>
+                <th>#</th><th>Category</th><th>Description</th><th>Room No.</th>
+                <th>Hostel</th><th>Block</th><th>Priority</th><th>Date</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -605,25 +565,15 @@
                     {% if c.image_filename %}<a class="photo-link" href="{{ url_for('static', filename='uploads/' ~ c.image_filename) }}" target="_blank">🖼 Photo</a>{% endif %}
                   </td>
                   <td style="font-weight:600;">{{ c.room_number }}</td>
-                  <!-- Hostel Type -->
                   <td>
                     {% if c.hostel_type %}
-                      {% if c.hostel_type|lower == 'boys' %}
-                        <span class="hostel-badge hostel-boys">♂ Boys</span>
-                      {% else %}
-                        <span class="hostel-badge hostel-girls">♀ Girls</span>
-                      {% endif %}
-                    {% else %}
-                      <span class="nil-val">—</span>
-                    {% endif %}
+                      {% if c.hostel_type|lower == 'boys' %}<span class="hostel-badge hostel-boys">♂ Boys</span>
+                      {% else %}<span class="hostel-badge hostel-girls">♀ Girls</span>{% endif %}
+                    {% else %}<span class="nil-val">—</span>{% endif %}
                   </td>
-                  <!-- Block -->
                   <td>
-                    {% if c.block %}
-                      <span class="block-badge">{{ c.block }}</span>
-                    {% else %}
-                      <span class="nil-val">—</span>
-                    {% endif %}
+                    {% if c.block %}<span class="block-badge">{{ c.block }}</span>
+                    {% else %}<span class="nil-val">—</span>{% endif %}
                   </td>
                   <td>
                     {% if c.priority == 'High' %}<span class="pri-badge pri-high">🔴 High</span>
@@ -736,7 +686,7 @@ document.querySelectorAll('.flt').forEach(btn => {
   });
 });
  
-/* ── Admin search (now also searches hostel type & block) ── */
+/* ── Admin search ── */
 function filterTable() {
   const q = (document.getElementById('searchInp')?.value || '').toLowerCase();
   document.querySelectorAll('tr.complaint-row').forEach(row => {
@@ -780,7 +730,7 @@ new Chart(document.getElementById('monthlyChart'), {
       { type:'line', label:'Resolved', data:monthlyResolved, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', borderWidth:2, pointBackgroundColor:'#10b981', pointRadius:4, tension:0.38, fill:true, order:1 }
     ]
   },
-    options: { responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false }, plugins:{ legend:{ position:'top', labels:{ color:'#ffffff', font:{size:11}, boxWidth:12, padding:12 } } }, scales:{ x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',font:{size:11}} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}}, beginAtZero:true } } }
+  options: { responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false }, plugins:{ legend:{ position:'top', labels:{ color:'#ffffff', font:{size:11}, boxWidth:12, padding:12 } } }, scales:{ x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',font:{size:11}} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}}, beginAtZero:true } } }
 });
  
 if (catLabels.length > 0) {
@@ -799,13 +749,13 @@ if (catLabels.length > 0) {
 new Chart(document.getElementById('priChart'), {
   type:'bar',
   data:{ labels:['Low','Medium','High'], datasets:[{ data:[priDict['Low']||0, priDict['Medium']||0, priDict['High']||0], backgroundColor:['rgba(16,185,129,0.65)','rgba(245,158,11,0.65)','rgba(239,68,68,0.65)'], borderColor:['#10b981','#f59e0b','#ef4444'], borderWidth:1, borderRadius:5 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#a8b3cf',font:{size:11}}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}},beginAtZero:true} } }
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#a8b3cf',font:{size:11}}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}},beginAtZero:true} } }
 });
  
 new Chart(document.getElementById('statusChart'), {
   type:'doughnut',
   data:{ labels:['Pending','In Progress','Resolved'], datasets:[{ data:[{{ stats.pending }},{{ stats.in_progress }},{{ stats.resolved }}], backgroundColor:['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'], borderColor:['#f59e0b','#3b82f6','#10b981'], borderWidth:2, hoverOffset:6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#ffffff', font:{size:12}, boxWidth:14, padding:10 } } }, cutout:'55%' }
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#ffffff', font:{size:12}, boxWidth:14, padding:10 } } }, cutout:'55%' }
 });
  
 /* ── BLOCK BAR CHART ── */
@@ -844,7 +794,7 @@ const blockBarChart = new Chart(document.getElementById('blockBarChart'), {
   }
 });
  
-/* ── BLOCK STATUS CHART (detail) ── */
+/* ── BLOCK STATUS DETAIL CHART ── */
 let blockStatusChartInst = null;
 function renderBlockStatusChart(block) {
   const ctx = document.getElementById('blockStatusChart');
@@ -855,7 +805,7 @@ function renderBlockStatusChart(block) {
     data   = [{{ stats.pending }},{{ stats.in_progress }},{{ stats.resolved }}];
     colors = ['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'];
     borders = ['#f59e0b','#3b82f6','#10b981'];
-    document.getElementById('blockDetailTitle').textContent = '\u{1F4CA} All Blocks Overview';
+    document.getElementById('blockDetailTitle').textContent = '📊 All Blocks Overview';
     document.getElementById('blockDetailSub').textContent   = 'Status breakdown across all blocks';
     document.getElementById('blockStatRow').style.display   = 'none';
   } else {
@@ -866,7 +816,7 @@ function renderBlockStatusChart(block) {
     data    = [p, ip, r];
     colors  = ['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'];
     borders = ['#f59e0b','#3b82f6','#10b981'];
-    document.getElementById('blockDetailTitle').textContent = '\u{1F3E2} Block ' + block + ' Details';
+    document.getElementById('blockDetailTitle').textContent = '🏢 Block ' + block + ' Details';
     document.getElementById('blockDetailSub').textContent   = total + ' complaint' + (total!==1?'s':'') + ' in Block ' + block;
     document.getElementById('blockStatRow').style.display   = 'grid';
     document.getElementById('bsPending').textContent  = p;
@@ -900,7 +850,6 @@ function selectBlock(btn, block) {
   );
   blockBarChart.update('none');
   renderBlockStatusChart(block);
- 
   setTimeout(() => { document.getElementById('complaints')?.scrollIntoView({behavior:'smooth',block:'start'}); }, 200);
 }
  
