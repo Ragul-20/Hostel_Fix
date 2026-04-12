@@ -204,7 +204,45 @@
     .info-card .ic-val { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: white; }
     .info-card .ic-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
  
-    @media (max-width: 1100px) { .charts-row1 { grid-template-columns: 1fr 1fr; } .charts-row1 .chart-card:last-child { grid-column: 1/-1; } .charts-row2 { grid-template-columns: 1fr; } }
+    /* BLOCK SELECTOR TABS */
+    .block-section { margin-bottom: 16px; }
+    .block-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    .block-tab {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 12px; cursor: pointer;
+      font-size: 13px; font-weight: 700; letter-spacing: .5px;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); color: var(--muted);
+      transition: all .2s; white-space: nowrap; position: relative;
+    }
+    .block-tab .bt-letter { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 800; }
+    .block-tab .bt-count { font-size: 10px; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 2px 7px; }
+    .block-tab:hover { border-color: rgba(255,215,0,0.4); color: white; background: rgba(255,215,0,0.06); }
+    .block-tab.active { background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.5); color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.1); }
+    .block-tab.active .bt-count { background: rgba(255,215,0,0.2); color: #ffd700; }
+    .block-tab-all { background: rgba(21,101,224,0.08); border-color: rgba(21,101,224,0.25); color: #60a5fa; }
+    .block-tab-all.active { background: rgba(21,101,224,0.18); border-color: var(--blue); color: white; box-shadow: 0 0 20px rgba(21,101,224,0.15); }
+    .block-chart-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .block-stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 14px; }
+    .bstat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .bstat-n { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; line-height: 1; }
+    .bstat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+ 
+    /* STUDENT PERSONAL BANNER */
+    .student-banner { background: linear-gradient(135deg, rgba(21,101,224,0.12), rgba(16,185,129,0.06)); border: 1px solid rgba(21,101,224,0.2); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+    .sb-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--blue), #0d47a1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .sb-info { flex: 1; }
+    .sb-name { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: white; }
+    .sb-email { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sb-stats { display: flex; gap: 16px; }
+    .sb-stat { text-align: center; }
+    .sb-stat-n { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800; color: white; line-height: 1; }
+    .sb-stat-l { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: .5px; text-transform: uppercase; }
+    .sb-stat-n.orange { color: var(--orange); }
+    .sb-stat-n.sky { color: #60a5fa; }
+    .sb-stat-n.green { color: #34d399; }
+ 
+    @media (max-width: 1100px) { .charts-row1 { grid-template-columns: 1fr 1fr; } .charts-row1 .chart-card:last-child { grid-column: 1/-1; } .charts-row2 { grid-template-columns: 1fr; } .block-chart-row { grid-template-columns: 1fr; } }
     @media (max-width: 900px)  { .student-grid { grid-template-columns: 1fr; } .stats-strip { grid-template-columns: repeat(2,1fr); } .info-strip { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 700px)  { .charts-row1 { grid-template-columns: 1fr; } .navbar { padding: 0 16px; } .page-wrap { padding: 20px 16px 60px; } .hero { padding: 32px 16px 60px; } .stats-wrap { padding: 0 16px; } .nb-logo-wrap { display: none; } }
     @media (max-width: 480px)  { .stats-strip { grid-template-columns: 1fr; } .info-strip { grid-template-columns: 1fr; } }
@@ -356,6 +394,41 @@
     </div>
   </div>
  
+  <!-- ── BLOCK-WISE ANALYTICS ── -->
+  <div class="block-section" id="blockSection">
+    <div class="sec-label">Block-Wise Complaint Analysis</div>
+    <div class="block-chart-row">
+      <div class="chart-card">
+        <h4>🏢 Complaints by Block</h4>
+        <p class="chart-sub">Touch a block tab below to filter complaints and see block details</p>
+        <div class="chart-wrap"><canvas id="blockBarChart"></canvas></div>
+      </div>
+      <div class="chart-card" id="blockDetailCard">
+        <h4 id="blockDetailTitle">📊 Block Overview</h4>
+        <p class="chart-sub" id="blockDetailSub">Select a block to view its breakdown</p>
+        <div class="chart-wrap-sm"><canvas id="blockStatusChart"></canvas></div>
+        <div class="block-stat-row" id="blockStatRow" style="display:none;">
+          <div class="bstat"><div><div class="bstat-n orange" id="bsPending">0</div><div class="bstat-l">Pending</div></div></div>
+          <div class="bstat"><div><div class="bstat-n sky" id="bsProgress">0</div><div class="bstat-l">In Progress</div></div></div>
+          <div class="bstat"><div><div class="bstat-n green" id="bsSolved">0</div><div class="bstat-l">Resolved</div></div></div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- BLOCK TAB SELECTOR -->
+    <div class="block-tabs" id="blockTabRow">
+      <button class="block-tab block-tab-all active" data-block="all" onclick="selectBlock(this,'all')">
+        <span>🏛</span><span class="bt-letter">All</span><span class="bt-count" id="btc-all">{{ complaints|length }}</span>
+      </button>
+      {% for blk in ['A','B','C','D','E','F'] %}
+      <button class="block-tab" data-block="{{ blk }}" onclick="selectBlock(this,'{{ blk }}')">
+        <span>🏢</span><span class="bt-letter">Block {{ blk }}</span>
+        <span class="bt-count" id="btc-{{ blk }}">{{ complaints | selectattr('block','equalto',blk) | list | length }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+ 
   <!-- ── ADMIN TABLE (with Hostel + Block columns) ── -->
   <div id="complaints" style="margin-top:8px;">
     <div class="sec-label">All Student Complaints</div>
@@ -395,7 +468,7 @@
           <tbody>
             {% if complaints %}
               {% for c in complaints %}
-              <tr class="complaint-row" data-status="{{ c.status }}"
+              <tr class="complaint-row" data-status="{{ c.status }}" data-block="{{ c.block or '' }}"
                   data-search="{{ c.student_name|lower }} {{ c.room_number|lower }} {{ c.category|lower }} {{ c.description|lower }} {{ (c.hostel_type or '')|lower }} {{ (c.block or '')|lower }}">
                 <td style="color:var(--dim);font-size:11px;">{{ loop.index }}</td>
                 <td>
@@ -463,7 +536,33 @@
  
 {% else %}
 <!-- ═══ STUDENT VIEW ════════════════════════════════════════════════════════ -->
-  <div class="student-grid" style="margin-top:28px;">
+  <!-- Student Personal Summary Banner -->
+  <div class="student-banner" style="margin-top:28px;">
+    <div class="sb-avatar">👤</div>
+    <div class="sb-info">
+      <div class="sb-name">{{ full_name }}</div>
+      <div class="sb-email">{{ email }} &nbsp;·&nbsp; <span style="color:#ffd700;font-weight:600;">Student</span></div>
+    </div>
+    <div class="sb-stats">
+      <div class="sb-stat">
+        <div class="sb-stat-n">{{ stats.active }}</div>
+        <div class="sb-stat-l">My Total</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-n orange">{{ stats.pending }}</div>
+        <div class="sb-stat-l">Pending</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-n sky">{{ stats.in_progress }}</div>
+        <div class="sb-stat-l">In Progress</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-n green">{{ stats.resolved }}</div>
+        <div class="sb-stat-l">Resolved</div>
+      </div>
+    </div>
+  </div>
+  <div class="student-grid" style="margin-top:16px;">
     <div id="complaints">
       <div class="sec-label">My Complaints</div>
       <div class="tbl-card">
@@ -664,6 +763,8 @@ const monthlyResolved = {{ monthly_resolved | safe }};
 const catLabels       = {{ cat_labels       | safe }};
 const catCounts       = {{ cat_counts       | safe }};
 const priDict         = {{ pri_dict         | safe }};
+const blockData       = {{ block_data       | safe }};
+const blockStatusData = {{ block_status_data | safe }};
  
 const resPct = {{ ((stats.resolved / stats.active * 100)|round|int) if stats.active > 0 else 0 }};
 setTimeout(() => { const el = document.getElementById('resFill'); if (el) el.style.width = resPct + '%'; }, 200);
@@ -706,6 +807,104 @@ new Chart(document.getElementById('statusChart'), {
   data:{ labels:['Pending','In Progress','Resolved'], datasets:[{ data:[{{ stats.pending }},{{ stats.in_progress }},{{ stats.resolved }}], backgroundColor:['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'], borderColor:['#f59e0b','#3b82f6','#10b981'], borderWidth:2, hoverOffset:6 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#ffffff', font:{size:12}, boxWidth:14, padding:10 } } }, cutout:'55%' }
 });
+ 
+/* ── BLOCK BAR CHART ── */
+const ALL_BLOCKS = ['A','B','C','D','E','F'];
+const blockCounts = ALL_BLOCKS.map(b => blockData[b] || 0);
+const blockBarChart = new Chart(document.getElementById('blockBarChart'), {
+  type: 'bar',
+  data: {
+    labels: ALL_BLOCKS.map(b => 'Block ' + b),
+    datasets: [{
+      label: 'Complaints',
+      data: blockCounts,
+      backgroundColor: [
+        'rgba(21,101,224,0.65)','rgba(245,158,11,0.65)','rgba(16,185,129,0.65)',
+        'rgba(139,92,246,0.65)','rgba(239,68,68,0.65)','rgba(20,184,166,0.65)'
+      ],
+      borderColor: ['#1565e0','#f59e0b','#10b981','#8b5cf6','#ef4444','#14b8a6'],
+      borderWidth: 2, borderRadius: 7, hoverBorderWidth: 3
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    onClick: (e, elements) => {
+      if (elements.length > 0) {
+        const idx = elements[0].index;
+        const blk = ALL_BLOCKS[idx];
+        const btn = document.querySelector('.block-tab[data-block="' + blk + '"]');
+        if (btn) { selectBlock(btn, blk); btn.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+      }
+    },
+    plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ' ' + ctx.raw + ' complaint' + (ctx.raw!==1?'s':'') } } },
+    scales: {
+      x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',font:{size:12,weight:'600'}} },
+      y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}}, beginAtZero:true }
+    }
+  }
+});
+ 
+/* ── BLOCK STATUS CHART (detail) ── */
+let blockStatusChartInst = null;
+function renderBlockStatusChart(block) {
+  const ctx = document.getElementById('blockStatusChart');
+  if (blockStatusChartInst) { blockStatusChartInst.destroy(); blockStatusChartInst = null; }
+  let labels, data, colors, borders;
+  if (block === 'all') {
+    labels = ['Pending','In Progress','Resolved'];
+    data   = [{{ stats.pending }},{{ stats.in_progress }},{{ stats.resolved }}];
+    colors = ['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'];
+    borders = ['#f59e0b','#3b82f6','#10b981'];
+    document.getElementById('blockDetailTitle').textContent = '\u{1F4CA} All Blocks Overview';
+    document.getElementById('blockDetailSub').textContent   = 'Status breakdown across all blocks';
+    document.getElementById('blockStatRow').style.display   = 'none';
+  } else {
+    const bd = blockStatusData[block] || {};
+    const p = bd['Pending']||0, ip = bd['In Progress']||0, r = bd['Resolved']||0;
+    const total = blockData[block]||0;
+    labels  = ['Pending','In Progress','Resolved'];
+    data    = [p, ip, r];
+    colors  = ['rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'];
+    borders = ['#f59e0b','#3b82f6','#10b981'];
+    document.getElementById('blockDetailTitle').textContent = '\u{1F3E2} Block ' + block + ' Details';
+    document.getElementById('blockDetailSub').textContent   = total + ' complaint' + (total!==1?'s':'') + ' in Block ' + block;
+    document.getElementById('blockStatRow').style.display   = 'grid';
+    document.getElementById('bsPending').textContent  = p;
+    document.getElementById('bsProgress').textContent = ip;
+    document.getElementById('bsSolved').textContent   = r;
+  }
+  blockStatusChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets:[{ data, backgroundColor:colors, borderColor:borders, borderWidth:2, hoverOffset:6 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#fff', font:{size:11}, boxWidth:12, padding:8 } } }, cutout:'58%', animation:{ animateRotate:true, duration:500 } }
+  });
+}
+ 
+/* ── BLOCK TAB SELECT + TABLE FILTER ── */
+function selectBlock(btn, block) {
+  document.querySelectorAll('.block-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+ 
+  document.querySelectorAll('tr.complaint-row').forEach(row => {
+    row.style.display = (block === 'all' || row.dataset.block === block) ? '' : 'none';
+  });
+ 
+  const idx = ALL_BLOCKS.indexOf(block);
+  blockBarChart.data.datasets[0].borderWidth = ALL_BLOCKS.map((_,i) => i===idx ? 4 : 2);
+  const baseColors = [
+    'rgba(21,101,224,OPACITY)','rgba(245,158,11,OPACITY)','rgba(16,185,129,OPACITY)',
+    'rgba(139,92,246,OPACITY)','rgba(239,68,68,OPACITY)','rgba(20,184,166,OPACITY)'
+  ];
+  blockBarChart.data.datasets[0].backgroundColor = baseColors.map((c,i) =>
+    c.replace('OPACITY', (block === 'all' || i === idx) ? '0.75' : '0.18')
+  );
+  blockBarChart.update('none');
+  renderBlockStatusChart(block);
+ 
+  setTimeout(() => { document.getElementById('complaints')?.scrollIntoView({behavior:'smooth',block:'start'}); }, 200);
+}
+ 
+renderBlockStatusChart('all');
 {% endif %}
 </script>
 </body>
