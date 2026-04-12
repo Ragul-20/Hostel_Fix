@@ -932,6 +932,11 @@ const HOSTEL_COLORS = {
   boys:  { accent:'#93c5fd', border:'rgba(21,101,224,0.5)',  bg:'rgba(21,101,224,0.18)',  dimBg:'rgba(21,101,224,0.06)',  barFill:'rgba(21,101,224,0.72)'  },
   girls: { accent:'#f9a8d4', border:'rgba(236,72,153,0.5)', bg:'rgba(236,72,153,0.18)', dimBg:'rgba(236,72,153,0.06)', barFill:'rgba(236,72,153,0.72)' }
 };
+/* Boys hostel has blocks A–F; Girls hostel has blocks A–C only */
+const HOSTEL_BLOCKS = {
+  boys:  ['A','B','C','D','E','F'],
+  girls: ['A','B','C']
+};
 const STATUS_COLORS  = { 'Pending':'#f59e0b', 'In Progress':'#3b82f6', 'Resolved':'#10b981' };
 const STATUS_LABELS  = ['Pending','In Progress','Resolved'];
 const ALL_CATS_H     = ['Electrical','Plumbing and Water','Wifi','Cleaning','Furniture','Others'];
@@ -947,13 +952,16 @@ function hostelStats(ht) {
   return { total: p+ip+r, pending:p, inProgress:ip, resolved:r };
 }
  
-/* Build the 6 block cards */
+/* Build the block cards — count depends on hostel (boys=6, girls=3) */
 function renderBlockCards(ht) {
   const col = HOSTEL_COLORS[ht];
   const blkData = hostelBlockData[ht] || {};
+  const blocks = HOSTEL_BLOCKS[ht];
   const container = document.getElementById('hostelBlockCards');
   container.innerHTML = '';
-  ALL_BLOCKS.forEach(blk => {
+  /* Use 3-col grid for boys (6 blocks), 3-col for girls (3 blocks) */
+  container.style.gridTemplateColumns = '1fr 1fr 1fr';
+  blocks.forEach(blk => {
     const sd = blkData[blk] || {};
     const p = sd['Pending']||0, ip = sd['In Progress']||0, r = sd['Resolved']||0;
     const total = p+ip+r;
@@ -986,19 +994,20 @@ function renderBlockCards(ht) {
   });
 }
  
-/* Grouped bar: 6 blocks × 3 statuses */
+/* Grouped bar: blocks × 3 statuses — only the blocks that hostel has */
 function renderHostelBlockBar(ht) {
   const col = HOSTEL_COLORS[ht];
   const blkData = hostelBlockData[ht] || {};
-  const pendingD  = ALL_BLOCKS.map(b => (blkData[b]||{})['Pending']||0);
-  const progressD = ALL_BLOCKS.map(b => (blkData[b]||{})['In Progress']||0);
-  const resolvedD = ALL_BLOCKS.map(b => (blkData[b]||{})['Resolved']||0);
+  const blocks = HOSTEL_BLOCKS[ht];
+  const pendingD  = blocks.map(b => (blkData[b]||{})['Pending']||0);
+  const progressD = blocks.map(b => (blkData[b]||{})['In Progress']||0);
+  const resolvedD = blocks.map(b => (blkData[b]||{})['Resolved']||0);
  
   if (hostelBlockBarInst) { hostelBlockBarInst.destroy(); hostelBlockBarInst = null; }
   hostelBlockBarInst = new Chart(document.getElementById('hostelBlockBarChart'), {
     type: 'bar',
     data: {
-      labels: ALL_BLOCKS.map(b => 'Block ' + b),
+      labels: blocks.map(b => 'Block ' + b),
       datasets: [
         { label:'Pending',     data:pendingD,  backgroundColor:'rgba(245,158,11,0.75)', borderColor:'#f59e0b', borderWidth:1, borderRadius:5 },
         { label:'In Progress', data:progressD, backgroundColor:'rgba(59,130,246,0.75)', borderColor:'#3b82f6', borderWidth:1, borderRadius:5 },
