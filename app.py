@@ -1,4 +1,3 @@
-
 import os
 import re
 import json
@@ -272,6 +271,19 @@ def welcome():
             if ht in hostel_status_data:
                 hostel_status_data[ht][sts] = cnt
  
+        # Hostel + Block cross data: {hostel_type: {block: {status: count}}}
+        hostel_block_rows = db.session.query(
+            Complaint.hostel_type, Complaint.block, Complaint.status, func.count(Complaint.id)
+        ).filter(Complaint.hostel_type != None, Complaint.block != None).group_by(
+            Complaint.hostel_type, Complaint.block, Complaint.status
+        ).all()
+        hostel_block_data = {"boys": {}, "girls": {}}
+        for ht, blk, sts, cnt in hostel_block_rows:
+            if ht in hostel_block_data:
+                if blk not in hostel_block_data[ht]:
+                    hostel_block_data[ht][blk] = {}
+                hostel_block_data[ht][blk][sts] = cnt
+ 
         now = datetime.utcnow()
         month_labels, monthly_issued, monthly_resolved = [], [], []
         for i in range(5, -1, -1):
@@ -294,6 +306,7 @@ def welcome():
         hostel_category_data = {}
         hostel_totals = {}
         hostel_status_data = {}
+        hostel_block_data = {}
  
     active = len(complaints)
     pending = sum(1 for c in complaints if c.status == "Pending")
@@ -318,6 +331,7 @@ def welcome():
         hostel_category_data=json.dumps(hostel_category_data),
         hostel_totals=json.dumps(hostel_totals),
         hostel_status_data=json.dumps(hostel_status_data),
+        hostel_block_data=json.dumps(hostel_block_data),
     )
  
  
