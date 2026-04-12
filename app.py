@@ -1,3 +1,6 @@
+
+Copy
+
 import os
 import re
 import json
@@ -251,6 +254,26 @@ def welcome():
                 block_status_data[blk] = {}
             block_status_data[blk][sts] = cnt
  
+        # Hostel-type (Boys / Girls) split for bar chart
+        hostel_rows = db.session.query(
+            Complaint.hostel_type, Complaint.category, func.count(Complaint.id)
+        ).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.category).all()
+        hostel_category_data = {"boys": {}, "girls": {}}
+        for ht, cat, cnt in hostel_rows:
+            if ht in hostel_category_data:
+                hostel_category_data[ht][cat] = cnt
+ 
+        # Simple totals per hostel for the summary bar chart
+        hostel_total_rows = db.session.query(Complaint.hostel_type, func.count(Complaint.id)).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type).all()
+        hostel_totals = {r[0]: r[1] for r in hostel_total_rows}
+ 
+        # Hostel status breakdown
+        hostel_status_rows = db.session.query(Complaint.hostel_type, Complaint.status, func.count(Complaint.id)).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.status).all()
+        hostel_status_data = {"boys": {}, "girls": {}}
+        for ht, sts, cnt in hostel_status_rows:
+            if ht in hostel_status_data:
+                hostel_status_data[ht][sts] = cnt
+ 
         now = datetime.utcnow()
         month_labels, monthly_issued, monthly_resolved = [], [], []
         for i in range(5, -1, -1):
@@ -270,13 +293,22 @@ def welcome():
         pri_dict = {}
         block_data = {}
         block_status_data = {}
+        hostel_category_data = {}
+        hostel_totals = {}
+        hostel_status_data = {}
  
     active = len(complaints)
     pending = sum(1 for c in complaints if c.status == "Pending")
     in_progress = sum(1 for c in complaints if c.status == "In Progress")
     resolved = sum(1 for c in complaints if c.status == "Resolved")
  
-    stats = dict(total=cumulative_total, active=active, pending=pending, in_progress=in_progress, resolved=resolved)
+    # For admin: total ever (global counter). For student: their own total.
+    if session.get("role") == "admin":
+        display_total = IssueCounter.get().total
+    else:
+        display_total = active
+ 
+    stats = dict(total=display_total, active=active, pending=pending, in_progress=in_progress, resolved=resolved)
  
     return render_template(
         "welcome.html", email=session["user"], full_name=session.get("full_name", ""),
@@ -285,6 +317,9 @@ def welcome():
         pri_dict=json.dumps(pri_dict), month_labels=json.dumps(month_labels),
         monthly_issued=json.dumps(monthly_issued), monthly_resolved=json.dumps(monthly_resolved),
         block_data=json.dumps(block_data), block_status_data=json.dumps(block_status_data),
+        hostel_category_data=json.dumps(hostel_category_data),
+        hostel_totals=json.dumps(hostel_totals),
+        hostel_status_data=json.dumps(hostel_status_data),
     )
  
  
