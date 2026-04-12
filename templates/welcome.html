@@ -245,6 +245,22 @@
     @media (max-width: 900px)  { .student-grid { grid-template-columns: 1fr; } .stats-strip { grid-template-columns: repeat(2,1fr); } .info-strip { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 700px)  { .charts-row1 { grid-template-columns: 1fr; } .navbar { padding: 0 16px; } .page-wrap { padding: 20px 16px 60px; } .hero { padding: 32px 16px 60px; } .stats-wrap { padding: 0 16px; } .nb-logo-wrap { display: none; } }
     @media (max-width: 480px)  { .stats-strip { grid-template-columns: 1fr; } .info-strip { grid-template-columns: 1fr; } }
+ 
+    /* ── HOSTEL EXPLORER ── */
+    .h-tab-btn { display:flex;align-items:center;gap:14px;padding:14px 24px;border-radius:14px;border:2px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:all .22s;text-align:left;min-width:200px; }
+    .h-tab-btn:hover { border-color:rgba(255,255,255,0.2);color:white;background:rgba(255,255,255,0.06); }
+    .h-tab-badge { margin-left:auto;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.08);color:var(--muted);white-space:nowrap; }
+    .h-stat-card { background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:12px;transition:transform .2s,border-color .2s; }
+    .h-stat-card:hover { transform:translateY(-2px);border-color:rgba(255,255,255,0.13); }
+    .h-stat-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0; }
+    .h-stat-num { font-family:'Sora',sans-serif;font-size:20px;font-weight:800;line-height:1; }
+    .h-stat-lbl { font-size:11px;color:var(--muted);margin-top:2px; }
+    .h-block-pill { display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;transition:all .2s;color:var(--muted);position:relative;overflow:hidden; }
+    .h-block-pill:hover { border-color:rgba(255,255,255,0.2);color:white;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3); }
+    .h-block-pill.active { color:white; }
+    .h-block-pill .pill-letter { font-family:'Sora',sans-serif;font-size:18px;font-weight:900;line-height:1; }
+    .h-block-pill .pill-count { font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(255,255,255,0.1); }
+    .h-block-pill .pill-bar { position:absolute;bottom:0;left:0;right:0;height:3px; }
   </style>
 </head>
 <body>
@@ -427,68 +443,116 @@
     </div>
   </div>
  
-  <!-- ═══ BOYS vs GIRLS HOSTEL EXPLORER ═══════════════════════════════════ -->
-  <div style="margin-bottom:20px;">
+  <!-- ═══ HOSTEL EXPLORER ════════════════════════════════════════════════ -->
+  <div id="hostelExplorer" style="margin-bottom:24px;">
     <div class="sec-label">Hostel-wise Complaint Explorer</div>
  
-    <!-- HOSTEL SWITCHER TABS -->
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-      <button id="htab-boys" onclick="switchHostel('boys')"
-        style="display:flex;align-items:center;gap:10px;padding:12px 28px;border-radius:14px;border:2px solid rgba(21,101,224,0.5);background:rgba(21,101,224,0.18);color:#93c5fd;font-family:'Sora',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .22s;letter-spacing:.3px;">
-        ♂ Boys Hostel <span id="htab-boys-count" style="font-size:12px;background:rgba(21,101,224,0.3);border-radius:20px;padding:2px 10px;font-family:'Inter',sans-serif;font-weight:600;">0</span>
+    <!-- STEP 1: Hostel switcher -->
+    <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center;">
+      <button id="htab-boys" onclick="switchHostel('boys')" class="h-tab-btn">
+        <span style="font-size:20px;">♂</span>
+        <div>
+          <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:800;">Boys Hostel</div>
+          <div id="htab-boys-sub" style="font-size:11px;opacity:.75;margin-top:1px;">— complaints</div>
+        </div>
+        <span id="htab-boys-count" class="h-tab-badge">0</span>
       </button>
-      <button id="htab-girls" onclick="switchHostel('girls')"
-        style="display:flex;align-items:center;gap:10px;padding:12px 28px;border-radius:14px;border:2px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:var(--muted);font-family:'Sora',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .22s;letter-spacing:.3px;">
-        ♀ Girls Hostel <span id="htab-girls-count" style="font-size:12px;background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;font-family:'Inter',sans-serif;font-weight:600;">0</span>
+      <button id="htab-girls" onclick="switchHostel('girls')" class="h-tab-btn">
+        <span style="font-size:20px;">♀</span>
+        <div>
+          <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:800;">Girls Hostel</div>
+          <div id="htab-girls-sub" style="font-size:11px;opacity:.75;margin-top:1px;">— complaints</div>
+        </div>
+        <span id="htab-girls-count" class="h-tab-badge">0</span>
       </button>
-      <div style="margin-left:auto;font-size:11px;color:var(--dim);">Click a hostel → then a block to explore</div>
-    </div>
- 
-    <!-- HOSTEL SUMMARY STRIP (changes per hostel) -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;" id="hostelSummaryStrip">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:rgba(21,101,224,0.14);display:flex;align-items:center;justify-content:center;font-size:18px;">🏠</div>
-        <div><div id="hs-total" style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:white;line-height:1;">—</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Total Complaints</div></div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:rgba(245,158,11,0.14);display:flex;align-items:center;justify-content:center;font-size:18px;">⏳</div>
-        <div><div id="hs-pending" style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--orange);line-height:1;">—</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Pending</div></div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:rgba(59,130,246,0.14);display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div>
-        <div><div id="hs-inprog" style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#60a5fa;line-height:1;">—</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">In Progress</div></div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:rgba(16,185,129,0.14);display:flex;align-items:center;justify-content:center;font-size:18px;">✅</div>
-        <div><div id="hs-resolved" style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#34d399;line-height:1;">—</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Resolved</div></div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);">
+        <span>①</span> Pick hostel &nbsp;→&nbsp; <span>②</span> Pick block &nbsp;→&nbsp; <span>③</span> View complaints
       </div>
     </div>
  
-    <!-- MAIN HOSTEL GRID: left = block cards, right = charts -->
-    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:16px;align-items:start;">
+    <!-- STEP 2: Hostel summary strip -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;" id="hostelSummaryStrip">
+      <div class="h-stat-card" style="grid-column:1">
+        <div class="h-stat-icon" style="background:rgba(21,101,224,0.15);">🏠</div>
+        <div><div id="hs-total" class="h-stat-num" style="color:white;">0</div><div class="h-stat-lbl">Total</div></div>
+      </div>
+      <div class="h-stat-card">
+        <div class="h-stat-icon" style="background:rgba(245,158,11,0.15);">⏳</div>
+        <div><div id="hs-pending" class="h-stat-num" style="color:#fbbf24;">0</div><div class="h-stat-lbl">Pending</div></div>
+      </div>
+      <div class="h-stat-card">
+        <div class="h-stat-icon" style="background:rgba(59,130,246,0.15);">🔧</div>
+        <div><div id="hs-inprog" class="h-stat-num" style="color:#60a5fa;">0</div><div class="h-stat-lbl">In Progress</div></div>
+      </div>
+      <div class="h-stat-card">
+        <div class="h-stat-icon" style="background:rgba(16,185,129,0.15);">✅</div>
+        <div><div id="hs-resolved" class="h-stat-num" style="color:#34d399;">0</div><div class="h-stat-lbl">Resolved</div></div>
+      </div>
+      <div class="h-stat-card">
+        <div class="h-stat-icon" style="background:rgba(139,92,246,0.15);">📊</div>
+        <div><div id="hs-rate" class="h-stat-num" style="color:#c4b5fd;">0%</div><div class="h-stat-lbl">Resolved Rate</div></div>
+      </div>
+    </div>
  
-      <!-- LEFT: Block cards grid -->
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;" id="hostelBlocksLabel">Block-wise Breakdown</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="hostelBlockCards">
-          <!-- filled by JS -->
+    <!-- STEP 3: Charts row (bar + doughnut) always visible -->
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="chart-card">
+        <h4 id="hostelBarTitle">🏢 Block-wise Complaints</h4>
+        <p class="chart-sub" id="hostelBarSub">Pending · In Progress · Resolved per block — click a bar or a block tab below</p>
+        <div style="position:relative;height:210px;"><canvas id="hostelBlockBarChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4 id="hostelCatTitle">🏷 Category Distribution</h4>
+        <p class="chart-sub">Issue types for selected hostel</p>
+        <div style="position:relative;height:210px;"><canvas id="hostelCatPieChart"></canvas></div>
+      </div>
+    </div>
+ 
+    <!-- STEP 4: Block pills (A–F) -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;" id="hostelBlocksLabel">Select a Block to View its Complaints</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;" id="hostelBlockPills">
+        <!-- filled by JS -->
+      </div>
+    </div>
+ 
+    <!-- STEP 5: Block detail panel (shown after block click) -->
+    <div id="hostelBlockPanel" style="display:none;border-radius:16px;border:1px solid var(--border);background:var(--card);overflow:hidden;margin-bottom:8px;">
+      <!-- Panel header -->
+      <div id="hostelBlockPanelHeader" style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="hostelBlockPanelBadge" style="font-family:'Sora',sans-serif;font-size:22px;font-weight:900;padding:8px 18px;border-radius:12px;">A</div>
+          <div>
+            <div id="hostelBlockPanelTitle" style="font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:white;">Block A Complaints</div>
+            <div id="hostelBlockPanelSub" style="font-size:12px;color:var(--muted);margin-top:2px;">— complaints in this block</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="bpBadgePending"  style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:rgba(245,158,11,0.13);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);">⏳ 0 Pending</span>
+          <span id="bpBadgeProgress" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:rgba(59,130,246,0.13);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);">🔧 0 In Progress</span>
+          <span id="bpBadgeResolved" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:rgba(16,185,129,0.13);color:#34d399;border:1px solid rgba(16,185,129,0.25);">✅ 0 Resolved</span>
+          <button onclick="closeBlockPanel()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;transition:.15s;" onmouseenter="this.style.color='white'" onmouseleave="this.style.color='var(--muted)'">✕ Close</button>
         </div>
       </div>
- 
-      <!-- RIGHT: Two stacked charts -->
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <!-- Grouped bar: blocks x status -->
-        <div class="chart-card" style="padding:18px 20px;">
-          <h4 id="hostelBarTitle">🏢 Block-wise Complaints</h4>
-          <p class="chart-sub" id="hostelBarSub">Pending · In Progress · Resolved per block</p>
-          <div style="position:relative;height:200px;"><canvas id="hostelBlockBarChart"></canvas></div>
-        </div>
-        <!-- Category pie for selected hostel -->
-        <div class="chart-card" style="padding:18px 20px;">
-          <h4 id="hostelCatTitle">🏷 Category Distribution</h4>
-          <p class="chart-sub">Issue types for selected hostel</p>
-          <div style="position:relative;height:180px;"><canvas id="hostelCatPieChart"></canvas></div>
-        </div>
+      <!-- Panel tri-bar -->
+      <div id="hostelBlockPanelBar" style="height:6px;display:flex;"></div>
+      <!-- Panel complaint list -->
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:680px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">#</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Student</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Category</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Description</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Room</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Priority</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Date</th>
+              <th style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 14px;text-align:left;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="hostelBlockPanelBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -524,7 +588,7 @@
           <tbody>
             {% if complaints %}
               {% for c in complaints %}
-              <tr class="complaint-row" data-status="{{ c.status }}" data-block="{{ c.block or '' }}"
+              <tr class="complaint-row" data-status="{{ c.status }}" data-block="{{ c.block or '' }}" data-hostel="{{ c.hostel_type or '' }}"
                   data-search="{{ c.student_name|lower }} {{ c.room_number|lower }} {{ c.category|lower }} {{ c.description|lower }} {{ (c.hostel_type or '')|lower }} {{ (c.block or '')|lower }}">
                 <td style="color:var(--dim);font-size:11px;">{{ loop.index }}</td>
                 <td>
@@ -925,167 +989,311 @@ function selectBlock(btn, block) {
  
 renderBlockStatusChart('all');
  
-/* ══════════════════════════════════════════════════════════════
-   HOSTEL EXPLORER  (Boys / Girls  +  Block breakdown)
-══════════════════════════════════════════════════════════════ */
-const HOSTEL_COLORS = {
-  boys:  { accent:'#93c5fd', border:'rgba(21,101,224,0.5)',  bg:'rgba(21,101,224,0.18)',  dimBg:'rgba(21,101,224,0.06)',  barFill:'rgba(21,101,224,0.72)'  },
-  girls: { accent:'#f9a8d4', border:'rgba(236,72,153,0.5)', bg:'rgba(236,72,153,0.18)', dimBg:'rgba(236,72,153,0.06)', barFill:'rgba(236,72,153,0.72)' }
-};
-/* Boys hostel has blocks A–F; Girls hostel has blocks A–C only */
-const HOSTEL_BLOCKS = {
-  boys:  ['A','B','C','D','E','F'],
-  girls: ['A','B','C']
-};
-const STATUS_COLORS  = { 'Pending':'#f59e0b', 'In Progress':'#3b82f6', 'Resolved':'#10b981' };
-const STATUS_LABELS  = ['Pending','In Progress','Resolved'];
-const ALL_CATS_H     = ['Electrical','Plumbing and Water','Wifi','Cleaning','Furniture','Others'];
-const CAT_ICONS      = { 'Electrical':'💡','Plumbing and Water':'🚿','Wifi':'📶','Cleaning':'🧹','Furniture':'🪑','Others':'📌' };
+/* ═══════════════════════════════════════════════════════════════════
+   HOSTEL EXPLORER — Boys / Girls tabs → Block pills → Complaint panel
+═══════════════════════════════════════════════════════════════════ */
  
-let activeHostel = 'boys';
-let hostelBlockBarInst = null, hostelCatPieInst = null;
+const HOSTEL_CFG = {
+  boys:  {
+    accent: '#93c5fd', accentDark: '#1565e0',
+    border: 'rgba(21,101,224,0.55)',  bg: 'rgba(21,101,224,0.16)',
+    barFill: 'rgba(21,101,224,0.8)', pillGlow: 'rgba(21,101,224,0.25)',
+    blocks: ['A','B','C','D','E','F']
+  },
+  girls: {
+    accent: '#f9a8d4', accentDark: '#db2777',
+    border: 'rgba(236,72,153,0.55)', bg: 'rgba(236,72,153,0.16)',
+    barFill: 'rgba(236,72,153,0.8)', pillGlow: 'rgba(236,72,153,0.25)',
+    blocks: ['A','B','C','D','E','F']
+  }
+};
+const ALL_CATS_H  = ['Electrical','Plumbing and Water','Wifi','Cleaning','Furniture','Others'];
+const CAT_COLORS  = ['#1565e0','#f59e0b','#10b981','#8b5cf6','#ef4444','#14b8a6'];
  
-/* Compute totals for a hostel from hostelStatusData */
-function hostelStats(ht) {
-  const s = hostelStatusData[ht] || {};
+let activeHostel  = 'boys';
+let activeBlock   = null;
+let hBarChart     = null;
+let hCatChart     = null;
+ 
+/* ── helpers ── */
+function hStats(ht) {
+  const s = (hostelStatusData || {})[ht] || {};
   const p = s['Pending']||0, ip = s['In Progress']||0, r = s['Resolved']||0;
-  return { total: p+ip+r, pending:p, inProgress:ip, resolved:r };
+  return { total:p+ip+r, pending:p, inProgress:ip, resolved:r };
+}
+function blkTotal(ht, blk) {
+  const b = ((hostelBlockData || {})[ht] || {})[blk] || {};
+  return (b['Pending']||0)+(b['In Progress']||0)+(b['Resolved']||0);
 }
  
-/* Build the block cards — count depends on hostel (boys=6, girls=3) */
-function renderBlockCards(ht) {
-  const col = HOSTEL_COLORS[ht];
-  const blkData = hostelBlockData[ht] || {};
-  const blocks = HOSTEL_BLOCKS[ht];
-  const container = document.getElementById('hostelBlockCards');
-  container.innerHTML = '';
-  /* Use 3-col grid for boys (6 blocks), 3-col for girls (3 blocks) */
-  container.style.gridTemplateColumns = '1fr 1fr 1fr';
-  blocks.forEach(blk => {
-    const sd = blkData[blk] || {};
-    const p = sd['Pending']||0, ip = sd['In Progress']||0, r = sd['Resolved']||0;
-    const total = p+ip+r;
-    const resRate = total > 0 ? Math.round(r/total*100) : 0;
-    const card = document.createElement('div');
-    card.style.cssText = `background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;`;
-    card.innerHTML = `
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col.barFill};border-radius:3px 3px 0 0;opacity:${total>0?1:0.2};"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:${col.accent};">Block ${blk}</div>
-        <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:white;">${total}</div>
+/* ── seed tab counts ── */
+['boys','girls'].forEach(h => {
+  const s = hStats(h);
+  const el = document.getElementById('htab-'+h+'-count');
+  if (el) el.textContent = s.total;
+  const sub = document.getElementById('htab-'+h+'-sub');
+  if (sub) sub.textContent = s.total + ' complaint' + (s.total!==1?'s':'');
+});
+ 
+/* ── switch hostel ── */
+function switchHostel(ht) {
+  activeHostel = ht;
+  activeBlock  = null;
+ 
+  const cfg = HOSTEL_CFG[ht];
+  const label = ht === 'boys' ? '♂ Boys Hostel' : '♀ Girls Hostel';
+ 
+  /* tab styles */
+  ['boys','girls'].forEach(h => {
+    const btn   = document.getElementById('htab-'+h);
+    const badge = document.getElementById('htab-'+h+'-count');
+    if (!btn) return;
+    const c = HOSTEL_CFG[h];
+    if (h === ht) {
+      btn.style.borderColor = c.border; btn.style.background = c.bg; btn.style.color = c.accent;
+      if (badge) { badge.style.background = c.bg; badge.style.color = c.accent; }
+    } else {
+      btn.style.borderColor = 'rgba(255,255,255,0.1)';
+      btn.style.background  = 'rgba(255,255,255,0.03)';
+      btn.style.color       = 'var(--muted)';
+      if (badge) { badge.style.background = 'rgba(255,255,255,0.08)'; badge.style.color = 'var(--muted)'; }
+    }
+  });
+ 
+  /* summary strip */
+  const s = hStats(ht);
+  const rate = s.total > 0 ? Math.round(s.resolved/s.total*100) : 0;
+  document.getElementById('hs-total').textContent    = s.total;
+  document.getElementById('hs-pending').textContent  = s.pending;
+  document.getElementById('hs-inprog').textContent   = s.inProgress;
+  document.getElementById('hs-resolved').textContent = s.resolved;
+  document.getElementById('hs-rate').textContent     = rate + '%';
+ 
+  /* labels */
+  const barTitle = document.getElementById('hostelBarTitle');
+  const barSub   = document.getElementById('hostelBarSub');
+  const catTitle = document.getElementById('hostelCatTitle');
+  const blkLabel = document.getElementById('hostelBlocksLabel');
+  if (barTitle) barTitle.textContent = '🏢 Block-wise Complaints — ' + label;
+  if (barSub)   barSub.textContent   = 'Pending · In Progress · Resolved per block — click a block pill to drill down';
+  if (catTitle) catTitle.textContent = '🏷 Category Distribution — ' + label;
+  if (blkLabel) blkLabel.textContent = label + ' · Select a Block';
+ 
+  buildBlockPills(ht);
+  renderHBar(ht, null);
+  renderHCat(ht);
+  closeBlockPanel();
+}
+ 
+/* ── block pills ── */
+function buildBlockPills(ht) {
+  const cfg  = HOSTEL_CFG[ht];
+  const wrap = document.getElementById('hostelBlockPills');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  cfg.blocks.forEach(blk => {
+    const total = blkTotal(ht, blk);
+    const bd    = ((hostelBlockData[ht] || {})[blk]) || {};
+    const p=bd['Pending']||0, ip=bd['In Progress']||0, r=bd['Resolved']||0;
+    const pill = document.createElement('button');
+    pill.className = 'h-block-pill';
+    pill.id = 'hpill-'+blk;
+    pill.innerHTML = `
+      <div class="pill-bar" style="background:linear-gradient(90deg,#f59e0b ${total>0?Math.round(p/total*100):0}%,#3b82f6 0 ${total>0?Math.round((p+ip)/total*100):0}%,#10b981 0);"></div>
+      <span class="pill-letter" style="color:${cfg.accent};">Block ${blk}</span>
+      <div style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--muted);">
+        <span style="color:${total>0?'white':'var(--dim)'};">${total} total</span>
+        <span style="color:#fbbf24;">⏳ ${p}</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
-        ${[['⏳','Pending',p,'#f59e0b'],['🔧','In Progress',ip,'#3b82f6'],['✅','Resolved',r,'#10b981']].map(([ic,lb,n,cl])=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;">
-          <span style="color:${cl};">${ic} ${lb}</span>
-          <span style="color:white;font-weight:700;">${n}</span>
-        </div>`).join('')}
-      </div>
-      <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;display:flex;">
-        <div style="width:${total>0?Math.round(p/total*100):0}%;background:#f59e0b;transition:width .6s;"></div>
-        <div style="width:${total>0?Math.round(ip/total*100):0}%;background:#3b82f6;transition:width .6s;"></div>
-        <div style="width:${total>0?Math.round(r/total*100):0}%;background:#10b981;transition:width .6s;"></div>
-      </div>
-      <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:right;">${resRate}% resolved</div>
+      <span class="pill-count">${total}</span>
     `;
-    card.addEventListener('mouseenter', () => { card.style.borderColor = col.border; card.style.transform = 'translateY(-3px)'; card.style.boxShadow = `0 8px 28px rgba(0,0,0,0.3)`; });
-    card.addEventListener('mouseleave', () => { card.style.borderColor = 'var(--border)'; card.style.transform = ''; card.style.boxShadow = ''; });
-    container.appendChild(card);
+    pill.addEventListener('click', () => selectBlock(ht, blk));
+    wrap.appendChild(pill);
   });
 }
  
-/* Grouped bar: blocks × 3 statuses — only the blocks that hostel has */
-function renderHostelBlockBar(ht) {
-  const col = HOSTEL_COLORS[ht];
-  const blkData = hostelBlockData[ht] || {};
-  const blocks = HOSTEL_BLOCKS[ht];
-  const pendingD  = blocks.map(b => (blkData[b]||{})['Pending']||0);
-  const progressD = blocks.map(b => (blkData[b]||{})['In Progress']||0);
-  const resolvedD = blocks.map(b => (blkData[b]||{})['Resolved']||0);
+/* ── select a block → show panel ── */
+function selectBlock(ht, blk) {
+  activeBlock = blk;
+  const cfg = HOSTEL_CFG[ht];
  
-  if (hostelBlockBarInst) { hostelBlockBarInst.destroy(); hostelBlockBarInst = null; }
-  hostelBlockBarInst = new Chart(document.getElementById('hostelBlockBarChart'), {
+  /* highlight active pill */
+  document.querySelectorAll('.h-block-pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.borderColor = 'var(--border)';
+    p.style.background  = 'rgba(255,255,255,0.03)';
+    p.style.boxShadow   = '';
+  });
+  const activePill = document.getElementById('hpill-'+blk);
+  if (activePill) {
+    activePill.classList.add('active');
+    activePill.style.borderColor = cfg.border;
+    activePill.style.background  = cfg.bg;
+    activePill.style.boxShadow   = '0 0 20px ' + cfg.pillGlow;
+  }
+ 
+  /* update bar chart highlight */
+  renderHBar(ht, blk);
+ 
+  /* build panel */
+  const bd  = ((hostelBlockData[ht]||{})[blk]) || {};
+  const p=bd['Pending']||0, ip=bd['In Progress']||0, r=bd['Resolved']||0;
+  const total = p+ip+r;
+  const hostelLabel = ht === 'boys' ? '♂ Boys' : '♀ Girls';
+ 
+  const badge = document.getElementById('hostelBlockPanelBadge');
+  const title = document.getElementById('hostelBlockPanelTitle');
+  const sub   = document.getElementById('hostelBlockPanelSub');
+  if (badge) {
+    badge.textContent = blk;
+    badge.style.background = cfg.bg;
+    badge.style.color      = cfg.accent;
+    badge.style.border     = '2px solid ' + cfg.border;
+  }
+  if (title) title.textContent = hostelLabel + ' Hostel — Block ' + blk + ' Complaints';
+  if (sub)   sub.textContent   = total + ' complaint' + (total!==1?'s':'') + ' in this block';
+ 
+  const bpp = document.getElementById('bpBadgePending');
+  const bpg = document.getElementById('bpBadgeProgress');
+  const bpr = document.getElementById('bpBadgeResolved');
+  if (bpp) bpp.textContent = '⏳ ' + p + ' Pending';
+  if (bpg) bpg.textContent = '🔧 ' + ip + ' In Progress';
+  if (bpr) bpr.textContent = '✅ ' + r + ' Resolved';
+ 
+  /* tri-colour bar */
+  const triBar = document.getElementById('hostelBlockPanelBar');
+  if (triBar && total > 0) {
+    triBar.innerHTML = `
+      <div style="width:${Math.round(p/total*100)}%;background:#f59e0b;transition:width .5s;"></div>
+      <div style="width:${Math.round(ip/total*100)}%;background:#3b82f6;transition:width .5s;"></div>
+      <div style="width:${Math.round(r/total*100)}%;background:#10b981;transition:width .5s;"></div>`;
+  } else if (triBar) {
+    triBar.innerHTML = '<div style="width:100%;background:rgba(255,255,255,0.06);"></div>';
+  }
+ 
+  /* complaint rows — filter from all complaint rows in the main table */
+  const tbody = document.getElementById('hostelBlockPanelBody');
+  if (tbody) {
+    tbody.innerHTML = '';
+    const rows = document.querySelectorAll('tr.complaint-row');
+    let idx = 0;
+    rows.forEach(row => {
+      const rowBlock  = (row.dataset.block  || '').toUpperCase();
+      const rowHostel = (row.dataset.hostel || '').toLowerCase();
+      if (rowBlock !== blk || rowHostel !== ht) return;
+      idx++;
+      const cells = row.querySelectorAll('td');
+      const status = row.dataset.status;
+      const badgeCls = status==='Pending'?'b-pending':status==='In Progress'?'b-progress':'b-solved';
+      const badgeIcon = status==='Pending'?'⏳':status==='In Progress'?'🔧':'✅';
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+      tr.innerHTML = `
+        <td style="padding:11px 14px;font-size:11px;color:var(--dim);">${idx}</td>
+        <td style="padding:11px 14px;">${cells[1]?.innerHTML || '—'}</td>
+        <td style="padding:11px 14px;">${cells[2]?.innerHTML || '—'}</td>
+        <td style="padding:11px 14px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cells[3]?.innerHTML || '—'}</td>
+        <td style="padding:11px 14px;font-weight:600;">${cells[4]?.textContent.trim() || '—'}</td>
+        <td style="padding:11px 14px;">${cells[7]?.innerHTML || '—'}</td>
+        <td style="padding:11px 14px;font-size:11px;color:var(--muted);">${cells[8]?.textContent.trim() || '—'}</td>
+        <td style="padding:11px 14px;"><span class="badge ${badgeCls}">${badgeIcon} ${status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if (idx === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--muted);font-size:13px;">No complaints recorded for Block ${blk} in this hostel</td></tr>`;
+    }
+  }
+ 
+  /* show panel */
+  const panel = document.getElementById('hostelBlockPanel');
+  if (panel) {
+    panel.style.display = 'block';
+    setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  }
+}
+ 
+function closeBlockPanel() {
+  activeBlock = null;
+  const panel = document.getElementById('hostelBlockPanel');
+  if (panel) panel.style.display = 'none';
+  document.querySelectorAll('.h-block-pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.borderColor = 'var(--border)';
+    p.style.background  = 'rgba(255,255,255,0.03)';
+    p.style.boxShadow   = '';
+  });
+  if (hBarChart) renderHBar(activeHostel, null);
+}
+ 
+/* ── bar chart: all blocks × 3 statuses, highlight selected ── */
+function renderHBar(ht, selectedBlk) {
+  const cfg    = HOSTEL_CFG[ht];
+  const blocks = cfg.blocks;
+  const blkD   = hostelBlockData[ht] || {};
+ 
+  const pData  = blocks.map(b => ((blkD[b])||{})['Pending']||0);
+  const ipData = blocks.map(b => ((blkD[b])||{})['In Progress']||0);
+  const rData  = blocks.map(b => ((blkD[b])||{})['Resolved']||0);
+ 
+  const dimAlpha = selectedBlk ? '0.18' : '0.75';
+  const mkColors = (base, solidAlpha) =>
+    blocks.map(b => b === selectedBlk ? base.replace('ALPHA', solidAlpha) : base.replace('ALPHA', dimAlpha));
+ 
+  const pendingBg  = mkColors('rgba(245,158,11,ALPHA)', '0.85');
+  const progressBg = mkColors('rgba(59,130,246,ALPHA)',  '0.85');
+  const resolvedBg = mkColors('rgba(16,185,129,ALPHA)', '0.85');
+ 
+  if (hBarChart) { hBarChart.destroy(); hBarChart = null; }
+  const ctx = document.getElementById('hostelBlockBarChart');
+  if (!ctx) return;
+  hBarChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: blocks.map(b => 'Block ' + b),
       datasets: [
-        { label:'Pending',     data:pendingD,  backgroundColor:'rgba(245,158,11,0.75)', borderColor:'#f59e0b', borderWidth:1, borderRadius:5 },
-        { label:'In Progress', data:progressD, backgroundColor:'rgba(59,130,246,0.75)', borderColor:'#3b82f6', borderWidth:1, borderRadius:5 },
-        { label:'Resolved',    data:resolvedD, backgroundColor:'rgba(16,185,129,0.75)', borderColor:'#10b981', borderWidth:1, borderRadius:5 }
+        { label:'Pending',     data:pData,  backgroundColor:pendingBg,  borderColor:'#f59e0b', borderWidth:1, borderRadius:5 },
+        { label:'In Progress', data:ipData, backgroundColor:progressBg, borderColor:'#3b82f6', borderWidth:1, borderRadius:5 },
+        { label:'Resolved',    data:rData,  backgroundColor:resolvedBg, borderColor:'#10b981', borderWidth:1, borderRadius:5 }
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ position:'top', labels:{ color:'#fff', font:{size:11}, boxWidth:12, padding:10 } } },
-      scales:{
-        x:{ stacked:false, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',font:{size:11,weight:'600'}} },
-        y:{ stacked:false, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}}, beginAtZero:true }
+      onClick: (e, els) => {
+        if (els.length > 0) {
+          const blk = blocks[els[0].index];
+          selectBlock(ht, blk);
+        }
       },
-      animation:{ duration:500 }
+      plugins:{ legend:{ position:'top', labels:{ color:'#fff', font:{size:11}, boxWidth:12, padding:10 } },
+                tooltip:{ callbacks:{ title: t => 'Block ' + t[0].label.replace('Block ','') } } },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',font:{size:11,weight:'600'}} },
+        y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#a8b3cf',stepSize:1,font:{size:11}}, beginAtZero:true }
+      },
+      animation:{ duration:400 }
     }
   });
 }
  
-/* Category doughnut for selected hostel */
-function renderHostelCatPie(ht) {
-  const catD = hostelCategoryData[ht] || {};
+/* ── category doughnut ── */
+function renderHCat(ht) {
+  const catD   = (hostelCategoryData[ht]) || {};
   const counts = ALL_CATS_H.map(c => catD[c]||0);
-  const CAT_COLS = ['#1565e0','#f59e0b','#10b981','#8b5cf6','#ef4444','#14b8a6'];
-  if (hostelCatPieInst) { hostelCatPieInst.destroy(); hostelCatPieInst = null; }
-  hostelCatPieInst = new Chart(document.getElementById('hostelCatPieChart'), {
-    type: 'doughnut',
-    data: { labels: ALL_CATS_H, datasets:[{ data:counts, backgroundColor:CAT_COLS, borderColor:'#111d30', borderWidth:3, hoverOffset:6 }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#fff', font:{size:11}, boxWidth:12, padding:8 } } }, cutout:'58%', animation:{duration:500} }
+  if (hCatChart) { hCatChart.destroy(); hCatChart = null; }
+  const ctx = document.getElementById('hostelCatPieChart');
+  if (!ctx) return;
+  hCatChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:ALL_CATS_H, datasets:[{ data:counts, backgroundColor:CAT_COLORS, borderColor:'#111d30', borderWidth:3, hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{ color:'#fff', font:{size:11}, boxWidth:12, padding:8 } } },
+      cutout:'60%', animation:{duration:450} }
   });
 }
  
-/* Update summary strip numbers */
-function updateSummaryStrip(ht) {
-  const s = hostelStats(ht);
-  document.getElementById('hs-total').textContent    = s.total;
-  document.getElementById('hs-pending').textContent  = s.pending;
-  document.getElementById('hs-inprog').textContent   = s.inProgress;
-  document.getElementById('hs-resolved').textContent = s.resolved;
-}
- 
-/* Update tab button styles */
-function updateHostelTabs(ht) {
-  ['boys','girls'].forEach(h => {
-    const btn = document.getElementById('htab-' + h);
-    const col = HOSTEL_COLORS[h];
-    const badge = document.getElementById('htab-' + h + '-count');
-    if (h === ht) {
-      btn.style.borderColor = col.border; btn.style.background = col.bg; btn.style.color = col.accent;
-      badge.style.background = col.bg;
-    } else {
-      btn.style.borderColor = 'rgba(255,255,255,0.1)'; btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.color = 'var(--muted)';
-      badge.style.background = 'rgba(255,255,255,0.08)';
-    }
-  });
-}
- 
-/* Main switch function */
-function switchHostel(ht) {
-  activeHostel = ht;
-  const label = ht === 'boys' ? '♂ Boys Hostel' : '♀ Girls Hostel';
-  document.getElementById('hostelBarTitle').textContent = `🏢 Block-wise Complaints — ${label}`;
-  document.getElementById('hostelCatTitle').textContent = `🏷 Category Distribution — ${label}`;
-  document.getElementById('hostelBlocksLabel').textContent = `${label} · Block Breakdown`;
-  updateHostelTabs(ht);
-  updateSummaryStrip(ht);
-  renderBlockCards(ht);
-  renderHostelBlockBar(ht);
-  renderHostelCatPie(ht);
-}
- 
-/* Seed badge counts */
-['boys','girls'].forEach(h => {
-  const s = hostelStats(h);
-  document.getElementById('htab-' + h + '-count').textContent = s.total;
-});
- 
-/* Initial render */
+/* ── initial render ── */
 switchHostel('boys');
  
 {% endif %}
