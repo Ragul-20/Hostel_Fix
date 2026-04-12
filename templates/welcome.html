@@ -309,13 +309,25 @@
     </div>
   </div>
 </section>
+
+   <div class="info-card">
+      <div class="ic-label">📋 Active Issues</div>
+      <div class="ic-val" style="color:#60a5fa;">{{ stats.active }}</div>
+      <div class="ic-sub">Currently open in system</div>
+    </div>
+  </div>
+  
  
 <!-- STAT STRIP -->
 <div class="stats-wrap">
   <div class="stats-strip">
     <div class="s-card">
-      <div class="s-icon si-blue">📋</div>
-      <div><div class="s-num">{{ stats.active }}</div><div class="s-lbl">{% if role == 'admin' %}Total Issues Ever{% else %}My Total Complaints{% endif %}</div></div>
+     <div class="info-card">
+      <div class="ic-label">📋 Total issues</div>
+      <div class="ic-val" style="color:#60a5fa;">{{ stats.active }}</div>
+      <div class="ic-sub">Currently open in system</div>
+    </div>
+  </div>
     </div>
     <div class="s-card c-orange">
       <div class="s-icon si-orange">⏳</div>
