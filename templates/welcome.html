@@ -299,7 +299,7 @@
   <div class="stats-strip">
     <div class="s-card">
       <div class="s-icon si-blue">📋</div>
-      <div><div class="s-num">{{ stats.total }}</div><div class="s-lbl">Total Issues Ever</div></div>
+      <div><div class="s-num">{{ stats.total }}</div><div class="s-lbl">{% if role == 'admin' %}Total Issues Ever{% else %}My Total Complaints{% endif %}</div></div>
     </div>
     <div class="s-card c-orange">
       <div class="s-icon si-orange">⏳</div>
@@ -424,6 +424,46 @@
         <span class="bt-count" id="btc-{{ blk }}">{{ complaints | selectattr('block','equalto',blk) | list | length }}</span>
       </button>
       {% endfor %}
+    </div>
+  </div>
+ 
+  <!-- HOSTEL (BOYS vs GIRLS) ANALYTICS -->
+  <div style="margin-bottom:16px;">
+    <div class="sec-label">Boys Hostel vs Girls Hostel</div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+ 
+      <!-- Grouped bar: complaints by category per hostel -->
+      <div class="chart-card">
+        <h4>📊 Category-wise: Boys vs Girls</h4>
+        <p class="chart-sub">Complaint categories split by hostel type</p>
+        <div class="chart-wrap" style="height:220px;"><canvas id="hostelCatChart"></canvas></div>
+      </div>
+ 
+      <!-- Hostel totals bar -->
+      <div class="chart-card">
+        <h4>🏠 Total Complaints by Hostel</h4>
+        <p class="chart-sub">Overall issue count per hostel</p>
+        <div class="chart-wrap" style="height:180px;"><canvas id="hostelTotalChart"></canvas></div>
+        <div style="display:flex;gap:12px;margin-top:14px;">
+          <div style="flex:1;background:rgba(21,101,224,0.1);border:1px solid rgba(21,101,224,0.25);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#93c5fd;" id="boysTotalVal">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;">♂ Boys</div>
+          </div>
+          <div style="flex:1;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.25);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#f9a8d4;" id="girlsTotalVal">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;">♀ Girls</div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Hostel status side-by-side -->
+      <div class="chart-card">
+        <h4>⚖️ Resolution Status: Boys vs Girls</h4>
+        <p class="chart-sub">Pending / In Progress / Resolved per hostel</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;" id="hostelStatusRows">
+          <!-- filled by JS -->
+        </div>
+      </div>
     </div>
   </div>
  
@@ -715,6 +755,9 @@ const catCounts       = {{ cat_counts       | safe }};
 const priDict         = {{ pri_dict         | safe }};
 const blockData       = {{ block_data       | safe }};
 const blockStatusData = {{ block_status_data | safe }};
+const hostelCategoryData = {{ hostel_category_data | safe }};
+const hostelTotals       = {{ hostel_totals       | safe }};
+const hostelStatusData   = {{ hostel_status_data   | safe }};
  
 const resPct = {{ ((stats.resolved / stats.active * 100)|round|int) if stats.active > 0 else 0 }};
 setTimeout(() => { const el = document.getElementById('resFill'); if (el) el.style.width = resPct + '%'; }, 200);
@@ -854,6 +897,88 @@ function selectBlock(btn, block) {
 }
  
 renderBlockStatusChart('all');
+ 
+/* ── BOYS vs GIRLS HOSTEL CHARTS ── */
+(function () {
+  // 1. Category grouped bar chart
+  const ALL_CATS = ['Electrical','Plumbing and Water','Wifi','Cleaning','Furniture','Others'];
+  const boysData  = ALL_CATS.map(c => (hostelCategoryData['boys']  || {})[c] || 0);
+  const girlsData = ALL_CATS.map(c => (hostelCategoryData['girls'] || {})[c] || 0);
+ 
+  new Chart(document.getElementById('hostelCatChart'), {
+    type: 'bar',
+    data: {
+      labels: ALL_CATS,
+      datasets: [
+        { label: '♂ Boys',  data: boysData,  backgroundColor: 'rgba(21,101,224,0.65)', borderColor: '#1565e0', borderWidth: 1, borderRadius: 5 },
+        { label: '♀ Girls', data: girlsData, backgroundColor: 'rgba(236,72,153,0.65)', borderColor: '#ec4899', borderWidth: 1, borderRadius: 5 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top', labels: { color: '#fff', font: { size: 11 }, boxWidth: 12, padding: 10 } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#a8b3cf', font: { size: 10 }, maxRotation: 30 } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#a8b3cf', stepSize: 1, font: { size: 11 } }, beginAtZero: true }
+      }
+    }
+  });
+ 
+  // 2. Total per hostel bar
+  const boysTotal  = hostelTotals['boys']  || 0;
+  const girlsTotal = hostelTotals['girls'] || 0;
+  document.getElementById('boysTotalVal').textContent  = boysTotal;
+  document.getElementById('girlsTotalVal').textContent = girlsTotal;
+ 
+  new Chart(document.getElementById('hostelTotalChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Boys Hostel', 'Girls Hostel'],
+      datasets: [{
+        data: [boysTotal, girlsTotal],
+        backgroundColor: ['rgba(21,101,224,0.65)', 'rgba(236,72,153,0.65)'],
+        borderColor: ['#1565e0', '#ec4899'],
+        borderWidth: 2, borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + ' complaint' + (ctx.raw !== 1 ? 's' : '') } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#a8b3cf', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#a8b3cf', stepSize: 1, font: { size: 11 } }, beginAtZero: true }
+      }
+    }
+  });
+ 
+  // 3. Status breakdown rows
+  function makeStatusRow(label, color, borderCol, statusObj) {
+    const p  = (statusObj || {})['Pending']     || 0;
+    const ip = (statusObj || {})['In Progress'] || 0;
+    const r  = (statusObj || {})['Resolved']    || 0;
+    const total = p + ip + r || 1;
+    return `
+      <div style="background:${color};border:1px solid ${borderCol};border-radius:10px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;">${label}</div>
+        <div style="display:flex;gap:6px;font-size:11px;color:var(--muted);margin-bottom:6px;">
+          <span style="color:#fbbf24;">⏳ ${p} Pending</span> &nbsp;·&nbsp;
+          <span style="color:#60a5fa;">🔧 ${ip} In Progress</span> &nbsp;·&nbsp;
+          <span style="color:#34d399;">✅ ${r} Resolved</span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;display:flex;">
+          <div style="width:${Math.round(p/total*100)}%;background:#f59e0b;"></div>
+          <div style="width:${Math.round(ip/total*100)}%;background:#3b82f6;"></div>
+          <div style="width:${Math.round(r/total*100)}%;background:#10b981;"></div>
+        </div>
+      </div>`;
+  }
+ 
+  const statusContainer = document.getElementById('hostelStatusRows');
+  statusContainer.innerHTML =
+    makeStatusRow('♂ Boys Hostel',  'rgba(21,101,224,0.1)', 'rgba(21,101,224,0.25)', hostelStatusData['boys']) +
+    makeStatusRow('♀ Girls Hostel', 'rgba(236,72,153,0.1)', 'rgba(236,72,153,0.25)', hostelStatusData['girls']);
+})();
 {% endif %}
 </script>
 </body>
