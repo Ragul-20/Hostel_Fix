@@ -1,29 +1,29 @@
+# Environment / secrets — NEVER commit these
+.env
+*.env
+ 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-.Python
-*.so
-*.egg
 *.egg-info/
 dist/
 build/
-
-# Environment
-.env
-.venv
+.eggs/
+ 
+# Virtual environments
 venv/
+.venv/
 env/
-
-# Database (using Render PostgreSQL — no local DB needed)
+ 
+# Local SQLite database
 *.sqlite3
-*.db
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Uploads (keep folder, ignore files)
-static/uploads/*
-!static/uploads/.gitkeep
+ 
+# Uploaded files
+static/uploads/
+ 
+# IDE
+.vscode/
+.idea/
+*.swp
