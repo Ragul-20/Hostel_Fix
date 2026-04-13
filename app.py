@@ -49,6 +49,8 @@ STUDENT_CREDENTIALS = {
     "ranjithbala.b2025@sece.ac.in": ("Ranjithbala B", "Ranjith@2025"),
     "pradeep.r.k2025@sece.ac.in": ("Pradeep R K", "Pradeep@2025"),
     "rajapandi.d2025@sece.ac.in": ("Rajapandi D", "Rajapandi@2025"),
+    "naveenkumar.g2025@sece.ac.in": ("NaveenKumar G", "Naveen@2025")
+ 
 }
  
 VALID_CATEGORIES  = {"Electrical", "Plumbing and Water", "Wifi", "Cleaning", "Furniture", "Others"}
