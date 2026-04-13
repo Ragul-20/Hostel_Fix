@@ -6,6 +6,10 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, flash, redirect, render_template, request, session, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
+try:
+    from twilio.rest import Client as TwilioClient
+except ImportError:
+    TwilioClient = None
  
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
  
@@ -38,26 +42,91 @@ DB_READY = False
 ADMIN_EMAIL = "admin@sece.ac.in"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@1234")
  
-STUDENT_CREDENTIALS = {
-    "ragul.s2025@sece.ac.in": ("Ragul S", "Ragul@2025"),
-    "santhoshkumarr.r.v2025@sece.ac.in": ("Santhoshkumar R V", "Santhosh@2025"),
-    "praganesh.s2025@sece.ac.in": ("Praganesh S", "Praganesh@2025"),
-    "rahul.b2025@sece.ac.in": ("Rahul B", "Rahul@2025"),
-    "saikarthik.g.j2025@sece.ac.in": ("Saikarthik G J", "Saikarthik@2025"),
-    "praveen.r2025@sece.ac.in": ("Praveen R", "Praveenr@2025"),
-    "praveen.j2025@sece.ac.in": ("Praveen J", "Praveenj@2025"),
-    "ranjithbala.b2025@sece.ac.in": ("Ranjithbala B", "Ranjith@2025"),
-    "pradeep.r.k2025@sece.ac.in": ("Pradeep R K", "Pradeep@2025"),
-    "rajapandi.d2025@sece.ac.in": ("Rajapandi D", "Rajapandi@2025"),
-    "naveenkumar.g2025@sece.ac.in": ("NaveenKumar G", "Naveen@2025")
+# ─────────────────────────────────────────────────────────────────────────────
+# Twilio credentials — loaded exclusively from environment variables.
+# NEVER hardcode these values here. Set them in your hosting platform's
+# environment / secrets manager (e.g. Render → Environment, Railway → Variables,
+# Heroku → Config Vars) or in a local .env file that is listed in .gitignore.
+# ─────────────────────────────────────────────────────────────────────────────
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN",  "")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
+WARDEN_NUMBER      = os.environ.get("WARDEN_NUMBER",      "")
  
+# Map student email → their personal phone number for resolved-complaint SMS
+STUDENT_PHONE_MAP = {
+    "ragul.s2025@sece.ac.in":       "+919042020299",
+    "ranjithbala.b2025@sece.ac.in": "+916384742246",
 }
  
-VALID_CATEGORIES  = {"Electrical", "Plumbing and Water", "Wifi", "Cleaning", "Furniture", "Others"}
-VALID_PRIORITIES  = {"Low", "Medium", "High"}
-VALID_STATUSES    = {"Pending", "In Progress", "Resolved"}
+ 
+def _send_sms(to_number: str, body: str):
+    """Low-level helper — sends one SMS via Twilio. Logs errors but never raises."""
+    if TwilioClient is None:
+        print("[SMS] twilio package not installed — skipping.")
+        return
+    try:
+        TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN).messages.create(
+            body=body,
+            from_=TWILIO_FROM_NUMBER,
+            to=to_number,
+        )
+        print(f"[SMS] Message sent to {to_number}")
+    except Exception as e:
+        print(f"[SMS] Failed to send to {to_number}: {e}")
+ 
+ 
+def send_warden_sms(complaint):
+    """Alert the warden whenever a new complaint is submitted."""
+    msg = (
+        f"New Complaint #{complaint.id}\n"
+        f"Student: {complaint.student_name}\n"
+        f"Room: {complaint.room_number} | Block: {complaint.block or 'N/A'} | "
+        f"Hostel: {complaint.hostel_type or 'N/A'}\n"
+        f"Category: {complaint.category} | Priority: {complaint.priority}\n"
+        f"Details: {complaint.description[:100]}"
+    )
+    _send_sms(WARDEN_NUMBER, msg)
+ 
+ 
+def send_resolved_sms(complaint):
+    """
+    Send an SMS to the student when their complaint is marked Resolved.
+    Only fires if the student's email is listed in STUDENT_PHONE_MAP.
+    """
+    phone = STUDENT_PHONE_MAP.get(complaint.student_email)
+    if not phone:
+        return  # student has no registered phone — skip silently
+ 
+    msg = (
+        f"Dear {complaint.student_name},\n"
+        f"Your complaint #{complaint.id} ({complaint.category}) has been RESOLVED.\n"
+        f"Room: {complaint.room_number}"
+        + (f" | Block: {complaint.block}" if complaint.block else "")
+        + f"\nThank you — SECE Hostel Management"
+    )
+    _send_sms(phone, msg)
+ 
+ 
+STUDENT_CREDENTIALS = {
+    "ragul.s2025@sece.ac.in":              ("Ragul S",           "Ragul@2025"),
+    "santhoshkumarr.r.v2025@sece.ac.in":   ("Santhoshkumar R V", "Santhosh@2025"),
+    "praganesh.s2025@sece.ac.in":          ("Praganesh S",       "Praganesh@2025"),
+    "rahul.b2025@sece.ac.in":              ("Rahul B",           "Rahul@2025"),
+    "saikarthik.g.j2025@sece.ac.in":       ("Saikarthik G J",    "Saikarthik@2025"),
+    "praveen.r2025@sece.ac.in":            ("Praveen R",         "Praveenr@2025"),
+    "praveen.j2025@sece.ac.in":            ("Praveen J",         "Praveenj@2025"),
+    "ranjithbala.b2025@sece.ac.in":        ("Ranjithbala B",     "Ranjith@2025"),
+    "pradeep.r.k2025@sece.ac.in":          ("Pradeep R K",       "Pradeep@2025"),
+    "rajapandi.d2025@sece.ac.in":          ("Rajapandi D",       "Rajapandi@2025"),
+    "naveenkumar.g2025@sece.ac.in":        ("NaveenKumar G",     "Naveen@2025"),
+}
+ 
+VALID_CATEGORIES   = {"Electrical", "Plumbing and Water", "Wifi", "Cleaning", "Furniture", "Others"}
+VALID_PRIORITIES   = {"Low", "Medium", "High"}
+VALID_STATUSES     = {"Pending", "In Progress", "Resolved"}
 VALID_HOSTEL_TYPES = {"boys", "girls"}
-VALID_BLOCKS      = {"A", "B", "C", "D", "E", "F"}
+VALID_BLOCKS       = {"A", "B", "C", "D", "E", "F"}
  
  
 def sanitize_string(text, max_length=255):
@@ -97,20 +166,20 @@ def admin_required(f):
  
 class Complaint(db.Model):
     __tablename__ = "complaints"
-    id            = db.Column(db.Integer, primary_key=True)
-    student_email = db.Column(db.String(120), nullable=False, index=True)
-    student_name  = db.Column(db.String(120), nullable=False)
-    room_number   = db.Column(db.String(50),  nullable=False)
-    category      = db.Column(db.String(50),  nullable=False)
-    priority      = db.Column(db.String(10),  nullable=False)
-    description   = db.Column(db.Text,        nullable=False)
-    hostel_type   = db.Column(db.String(10),  nullable=True)
-    block         = db.Column(db.String(5),   nullable=True)
+    id             = db.Column(db.Integer,     primary_key=True)
+    student_email  = db.Column(db.String(120), nullable=False, index=True)
+    student_name   = db.Column(db.String(120), nullable=False)
+    room_number    = db.Column(db.String(50),  nullable=False)
+    category       = db.Column(db.String(50),  nullable=False)
+    priority       = db.Column(db.String(10),  nullable=False)
+    description    = db.Column(db.Text,        nullable=False)
+    hostel_type    = db.Column(db.String(10),  nullable=True)
+    block          = db.Column(db.String(5),   nullable=True)
     image_filename = db.Column(db.String(255), nullable=True)
-    status        = db.Column(db.String(20),  nullable=False, default="Pending")
-    admin_note    = db.Column(db.Text,        nullable=True)
-    created_at    = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow)
-    updated_at    = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status         = db.Column(db.String(20),  nullable=False, default="Pending")
+    admin_note     = db.Column(db.Text,        nullable=True)
+    created_at     = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow)
+    updated_at     = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
  
     def to_dict(self):
         return {
@@ -131,11 +200,6 @@ class Complaint(db.Model):
         }
  
  
-# ─────────────────────────────────────────────────────────────────────────────
-# IssueCounter: tracks the ALL-TIME cumulative total (never decremented).
-# On every startup we re-sync it to max(counter.total, actual DB count) so
-# stale / mismatched values are automatically corrected.
-# ─────────────────────────────────────────────────────────────────────────────
 class IssueCounter(db.Model):
     __tablename__ = "issue_counter"
     id    = db.Column(db.Integer, primary_key=True)
@@ -165,16 +229,11 @@ def _init_db():
         print(f"[HOSTEL APP] Initializing with {db_type} database...")
         db.create_all()
  
-        # ── FIX: always sync counter to actual DB count on startup ──────────
-        # The counter is CUMULATIVE (never goes down on delete), so we take
-        # the maximum of what's stored and the real row count.  This repairs
-        # any mismatch caused by past bugs or manual DB edits.
         counter      = IssueCounter.get()
         actual_count = Complaint.query.count()
         if actual_count > counter.total:
             counter.total = actual_count
             db.session.commit()
-        # ────────────────────────────────────────────────────────────────────
  
         print(f"[HOSTEL APP] Database ready. Cumulative total complaints: {IssueCounter.get().total}")
         DB_READY = True
@@ -216,7 +275,7 @@ def handle_login():
         return render_template("login.html", error="Invalid email format.")
  
     if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
-        session.permanent  = True
+        session.permanent   = True
         session["user"]      = email
         session["role"]      = "admin"
         session["full_name"] = "Administrator"
@@ -226,7 +285,7 @@ def handle_login():
     if email in STUDENT_CREDENTIALS:
         display_name, correct_pw = STUDENT_CREDENTIALS[email]
         if password == correct_pw:
-            session.permanent  = True
+            session.permanent   = True
             session["user"]      = email
             session["role"]      = "student"
             session["full_name"] = display_name
@@ -252,7 +311,6 @@ def welcome():
         pri_rows = db.session.query(Complaint.priority, func.count(Complaint.id)).group_by(Complaint.priority).all()
         pri_dict = {r[0]: r[1] for r in pri_rows}
  
-        # Block-wise data
         block_rows = db.session.query(
             Complaint.block, func.count(Complaint.id)
         ).filter(Complaint.block != None).group_by(Complaint.block).all()
@@ -265,7 +323,6 @@ def welcome():
         for blk, sts, cnt in block_status_rows:
             block_status_data.setdefault(blk, {})[sts] = cnt
  
-        # Hostel category breakdown
         hostel_rows = db.session.query(
             Complaint.hostel_type, Complaint.category, func.count(Complaint.id)
         ).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.category).all()
@@ -316,9 +373,9 @@ def welcome():
             student_email=session["user"]
         ).order_by(Complaint.created_at.desc()).all()
         cat_labels = cat_counts = month_labels = monthly_issued = monthly_resolved = []
-        pri_dict          = {}
-        block_data        = {}
-        block_status_data = {}
+        pri_dict             = {}
+        block_data           = {}
+        block_status_data    = {}
         hostel_category_data = {}
         hostel_totals        = {}
         hostel_status_data   = {}
@@ -329,11 +386,10 @@ def welcome():
     in_progress = sum(1 for c in complaints if c.status == "In Progress")
     resolved    = sum(1 for c in complaints if c.status == "Resolved")
  
-    # ── FIX: admin sees the live cumulative counter; student sees their own count ──
     if session.get("role") == "admin":
         display_total = IssueCounter.get().total
     else:
-        display_total = active   # student: total = their own complaints
+        display_total = active
  
     stats = dict(
         total=display_total,
@@ -380,13 +436,13 @@ def submit_complaint():
     if session.get("role") == "admin":
         return redirect(url_for("welcome"))
  
-    student_name     = sanitize_string(request.form.get("name", ""), 120)
-    room_number      = sanitize_string(request.form.get("room", ""), 50)
-    hostel_type_raw  = (request.form.get("hostel_type") or "").strip().lower()
-    block_raw        = (request.form.get("block")       or "").strip().upper()
-    category_raw     = (request.form.get("category")   or "").strip()
-    priority_raw     = (request.form.get("priority")   or "").strip()
-    description      = sanitize_description(request.form.get("description", ""), 500)
+    student_name    = sanitize_string(request.form.get("name", ""), 120)
+    room_number     = sanitize_string(request.form.get("room", ""), 50)
+    hostel_type_raw = (request.form.get("hostel_type") or "").strip().lower()
+    block_raw       = (request.form.get("block")       or "").strip().upper()
+    category_raw    = (request.form.get("category")   or "").strip()
+    priority_raw    = (request.form.get("priority")   or "").strip()
+    description     = sanitize_description(request.form.get("description", ""), 500)
  
     hostel_type = hostel_type_raw if hostel_type_raw in VALID_HOSTEL_TYPES else None
     block       = block_raw       if block_raw       in VALID_BLOCKS       else None
@@ -416,13 +472,11 @@ def submit_complaint():
         status="Pending",
     )
     db.session.add(c)
-    db.session.flush()   # get c.id before commit
+    db.session.flush()
  
-    # ── FIX: always increment cumulative counter on new submission ──
     counter = IssueCounter.get()
     counter.total += 1
     db.session.commit()
-    # ───────────────────────────────────────────────────────────────
  
     uploaded = request.files.get("image")
     if uploaded and uploaded.filename and uploaded.filename.strip():
@@ -434,6 +488,9 @@ def submit_complaint():
             db.session.commit()
         else:
             flash("Invalid image type. PNG, JPG, JPEG, WEBP allowed.", "warning")
+ 
+    # Notify warden about the new complaint
+    send_warden_sms(c)
  
     flash("Complaint submitted successfully!", "success")
     return redirect(url_for("welcome"))
@@ -447,11 +504,20 @@ def update_complaint(cid):
     new_status = (request.form.get("status") or "").strip()
     admin_note = sanitize_description(request.form.get("admin_note", ""), 500)
  
+    old_status = c.status  # remember previous status before updating
+ 
     if new_status in VALID_STATUSES:
         c.status = new_status
-    c.admin_note  = admin_note
-    c.updated_at  = datetime.utcnow()
+    c.admin_note = admin_note
+    c.updated_at = datetime.utcnow()
     db.session.commit()
+ 
+    # ── Send SMS to student if their complaint just became Resolved ──────────
+    # Only fires when status actually changes TO "Resolved" (not on re-saves).
+    if c.status == "Resolved" and old_status != "Resolved":
+        send_resolved_sms(c)
+    # ─────────────────────────────────────────────────────────────────────────
+ 
     flash(f"Complaint #{cid} updated to '{c.status}'.", "success")
     return redirect(url_for("welcome"))
  
@@ -462,7 +528,6 @@ def update_complaint(cid):
 def delete_complaint(cid):
     c = Complaint.query.get_or_404(cid)
  
-    # Remove associated image file if present
     if c.image_filename:
         img_path = os.path.join(UPLOAD_DIR, c.image_filename)
         if os.path.exists(img_path):
@@ -473,8 +538,7 @@ def delete_complaint(cid):
  
     db.session.delete(c)
     db.session.commit()
-    # NOTE: We do NOT decrement IssueCounter — it is intentionally cumulative
-    # (tracks "Total Issues Ever Raised", not current count).
+    # IssueCounter is intentionally cumulative — not decremented on delete
     flash(f"Complaint #{cid} deleted.", "success")
     return redirect(url_for("welcome"))
  
