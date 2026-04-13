@@ -309,25 +309,13 @@
     </div>
   </div>
 </section>
-
-   <div class="info-card">
-      <div class="ic-label">📋 Active Issues</div>
-      <div class="ic-val" style="color:#60a5fa;">{{ stats.active }}</div>
-      <div class="ic-sub">Currently open in system</div>
-    </div>
-  </div>
-  
  
 <!-- STAT STRIP -->
 <div class="stats-wrap">
   <div class="stats-strip">
     <div class="s-card">
-     <div class="info-card">
-      <div class="ic-label">📋 Total issues</div>
-      <div class="ic-val" style="color:#60a5fa;">{{ stats.active }}</div>
-      <div class="ic-sub">Currently open in system</div>
-    </div>
-  </div>
+      <div class="s-icon si-blue">📋</div>
+      <div><div class="s-num">{{ stats.total }}</div><div class="s-lbl">{% if role == 'admin' %}Total Issues Ever{% else %}My Total Complaints{% endif %}</div></div>
     </div>
     <div class="s-card c-orange">
       <div class="s-icon si-orange">⏳</div>
@@ -665,7 +653,7 @@
       <div class="sb-email">{{ email }} &nbsp;·&nbsp; <span style="color:#ffd700;font-weight:600;">Student</span></div>
     </div>
     <div class="sb-stats">
-      <div class="sb-stat"><div class="sb-stat-n">({{ stats.active }})</div><div class="sb-stat-l">My Total</div></div>
+      <div class="sb-stat"><div class="sb-stat-n">{{ stats.active }}</div><div class="sb-stat-l">My Total</div></div>
       <div class="sb-stat"><div class="sb-stat-n orange">{{ stats.pending }}</div><div class="sb-stat-l">Pending</div></div>
       <div class="sb-stat"><div class="sb-stat-n sky">{{ stats.in_progress }}</div><div class="sb-stat-l">In Progress</div></div>
       <div class="sb-stat"><div class="sb-stat-n green">{{ stats.resolved }}</div><div class="sb-stat-l">Resolved</div></div>
@@ -751,7 +739,14 @@
           <a href="/complaint" class="qa"><span class="qa-ico">📌</span> Other Issue <span class="qa-arr">→</span></a>
         </div>
       </div>
-      
+      <div class="side-card">
+        <h4>📢 Notice Board</h4>
+        <div class="notices">
+          <div class="notice"><div class="n-dot" style="background:#ef4444;"></div><div><div class="n-title">Water Interruption</div><div class="n-body">Block B — 6 AM–9 AM every Sunday.</div></div></div>
+          <div class="notice"><div class="n-dot" style="background:#ffd700;"></div><div><div class="n-title">Wi-Fi Upgrade</div><div class="n-body">New routers on floors 3 & 4.</div></div></div>
+          <div class="notice"><div class="n-dot" style="background:#10b981;"></div><div><div class="n-title">Response SLA</div><div class="n-body">All issues resolved within 24 hrs.</div></div></div>
+        </div>
+      </div>
       <div class="side-card">
         <h4>🚨 Emergency</h4>
         <div class="emer-box">
