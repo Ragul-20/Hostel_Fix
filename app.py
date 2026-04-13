@@ -51,11 +51,11 @@ STUDENT_CREDENTIALS = {
     "rajapandi.d2025@sece.ac.in": ("Rajapandi D", "Rajapandi@2025"),
 }
  
-VALID_CATEGORIES = {"Electrical", "Plumbing and Water", "Wifi", "Cleaning", "Furniture", "Others"}
-VALID_PRIORITIES = {"Low", "Medium", "High"}
-VALID_STATUSES = {"Pending", "In Progress", "Resolved"}
+VALID_CATEGORIES  = {"Electrical", "Plumbing and Water", "Wifi", "Cleaning", "Furniture", "Others"}
+VALID_PRIORITIES  = {"Low", "Medium", "High"}
+VALID_STATUSES    = {"Pending", "In Progress", "Resolved"}
 VALID_HOSTEL_TYPES = {"boys", "girls"}
-VALID_BLOCKS = {"A", "B", "C", "D", "E", "F"}
+VALID_BLOCKS      = {"A", "B", "C", "D", "E", "F"}
  
  
 def sanitize_string(text, max_length=255):
@@ -95,20 +95,20 @@ def admin_required(f):
  
 class Complaint(db.Model):
     __tablename__ = "complaints"
-    id = db.Column(db.Integer, primary_key=True)
+    id            = db.Column(db.Integer, primary_key=True)
     student_email = db.Column(db.String(120), nullable=False, index=True)
-    student_name = db.Column(db.String(120), nullable=False)
-    room_number = db.Column(db.String(50), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    priority = db.Column(db.String(10), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    hostel_type = db.Column(db.String(10), nullable=True)
-    block = db.Column(db.String(5), nullable=True)
+    student_name  = db.Column(db.String(120), nullable=False)
+    room_number   = db.Column(db.String(50),  nullable=False)
+    category      = db.Column(db.String(50),  nullable=False)
+    priority      = db.Column(db.String(10),  nullable=False)
+    description   = db.Column(db.Text,        nullable=False)
+    hostel_type   = db.Column(db.String(10),  nullable=True)
+    block         = db.Column(db.String(5),   nullable=True)
     image_filename = db.Column(db.String(255), nullable=True)
-    status = db.Column(db.String(20), nullable=False, default="Pending")
-    admin_note = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status        = db.Column(db.String(20),  nullable=False, default="Pending")
+    admin_note    = db.Column(db.Text,        nullable=True)
+    created_at    = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow)
+    updated_at    = db.Column(db.DateTime,    nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
  
     def to_dict(self):
         return {
@@ -129,9 +129,14 @@ class Complaint(db.Model):
         }
  
  
+# ─────────────────────────────────────────────────────────────────────────────
+# IssueCounter: tracks the ALL-TIME cumulative total (never decremented).
+# On every startup we re-sync it to max(counter.total, actual DB count) so
+# stale / mismatched values are automatically corrected.
+# ─────────────────────────────────────────────────────────────────────────────
 class IssueCounter(db.Model):
     __tablename__ = "issue_counter"
-    id = db.Column(db.Integer, primary_key=True)
+    id    = db.Column(db.Integer, primary_key=True)
     total = db.Column(db.Integer, nullable=False, default=0)
  
     @classmethod
@@ -157,13 +162,19 @@ def _init_db():
         db_type = "PostgreSQL" if os.environ.get("DATABASE_URL") else "SQLite"
         print(f"[HOSTEL APP] Initializing with {db_type} database...")
         db.create_all()
-        counter = IssueCounter.get()
-        if counter.total == 0:
-            existing = Complaint.query.count()
-            if existing:
-                counter.total = existing
-                db.session.commit()
-        print(f"[HOSTEL APP] Database ready. Total complaints: {IssueCounter.get().total}")
+ 
+        # ── FIX: always sync counter to actual DB count on startup ──────────
+        # The counter is CUMULATIVE (never goes down on delete), so we take
+        # the maximum of what's stored and the real row count.  This repairs
+        # any mismatch caused by past bugs or manual DB edits.
+        counter      = IssueCounter.get()
+        actual_count = Complaint.query.count()
+        if actual_count > counter.total:
+            counter.total = actual_count
+            db.session.commit()
+        # ────────────────────────────────────────────────────────────────────
+ 
+        print(f"[HOSTEL APP] Database ready. Cumulative total complaints: {IssueCounter.get().total}")
         DB_READY = True
  
  
@@ -176,9 +187,9 @@ def _setup():
 @app.after_request
 def add_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-Frame-Options"]        = "DENY"
+    response.headers["X-XSS-Protection"]       = "1; mode=block"
+    response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
     return response
  
  
@@ -191,21 +202,21 @@ def login():
  
 @app.route("/login", methods=["POST"])
 def handle_login():
-    email = (request.form.get("email") or "").strip().lower()
+    email    = (request.form.get("email")    or "").strip().lower()
     password = (request.form.get("password") or "").strip()
  
     if not email or not password:
         return render_template("login.html", error="Please enter email and password.")
  
     email = sanitize_string(email, 120)
-    
+ 
     if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
         return render_template("login.html", error="Invalid email format.")
  
     if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
-        session.permanent = True
-        session["user"] = email
-        session["role"] = "admin"
+        session.permanent  = True
+        session["user"]      = email
+        session["role"]      = "admin"
         session["full_name"] = "Administrator"
         session["login_time"] = datetime.utcnow().isoformat()
         return redirect(url_for("welcome"))
@@ -213,9 +224,9 @@ def handle_login():
     if email in STUDENT_CREDENTIALS:
         display_name, correct_pw = STUDENT_CREDENTIALS[email]
         if password == correct_pw:
-            session.permanent = True
-            session["user"] = email
-            session["role"] = "student"
+            session.permanent  = True
+            session["user"]      = email
+            session["role"]      = "student"
             session["full_name"] = display_name
             session["login_time"] = datetime.utcnow().isoformat()
             return redirect(url_for("welcome"))
@@ -227,31 +238,32 @@ def handle_login():
 @app.route("/welcome")
 @login_required
 def welcome():
-    cumulative_total = IssueCounter.get().total
- 
     if session.get("role") == "admin":
         complaints = Complaint.query.order_by(Complaint.created_at.desc()).all()
  
         from sqlalchemy import func
-        cat_rows = db.session.query(Complaint.category, func.count(Complaint.id)).group_by(Complaint.category).all()
+ 
+        cat_rows   = db.session.query(Complaint.category, func.count(Complaint.id)).group_by(Complaint.category).all()
         cat_labels = [r[0] for r in cat_rows]
         cat_counts = [r[1] for r in cat_rows]
  
         pri_rows = db.session.query(Complaint.priority, func.count(Complaint.id)).group_by(Complaint.priority).all()
         pri_dict = {r[0]: r[1] for r in pri_rows}
  
-        # Block-wise complaint data for admin
-        block_rows = db.session.query(Complaint.block, func.count(Complaint.id)).filter(Complaint.block != None).group_by(Complaint.block).all()
+        # Block-wise data
+        block_rows = db.session.query(
+            Complaint.block, func.count(Complaint.id)
+        ).filter(Complaint.block != None).group_by(Complaint.block).all()
         block_data = {r[0]: r[1] for r in block_rows}
-        # Also get block+status breakdown
-        block_status_rows = db.session.query(Complaint.block, Complaint.status, func.count(Complaint.id)).filter(Complaint.block != None).group_by(Complaint.block, Complaint.status).all()
+ 
+        block_status_rows = db.session.query(
+            Complaint.block, Complaint.status, func.count(Complaint.id)
+        ).filter(Complaint.block != None).group_by(Complaint.block, Complaint.status).all()
         block_status_data = {}
         for blk, sts, cnt in block_status_rows:
-            if blk not in block_status_data:
-                block_status_data[blk] = {}
-            block_status_data[blk][sts] = cnt
+            block_status_data.setdefault(blk, {})[sts] = cnt
  
-        # Hostel-type (Boys / Girls) split for bar chart
+        # Hostel category breakdown
         hostel_rows = db.session.query(
             Complaint.hostel_type, Complaint.category, func.count(Complaint.id)
         ).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.category).all()
@@ -260,18 +272,19 @@ def welcome():
             if ht in hostel_category_data:
                 hostel_category_data[ht][cat] = cnt
  
-        # Simple totals per hostel for the summary bar chart
-        hostel_total_rows = db.session.query(Complaint.hostel_type, func.count(Complaint.id)).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type).all()
+        hostel_total_rows = db.session.query(
+            Complaint.hostel_type, func.count(Complaint.id)
+        ).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type).all()
         hostel_totals = {r[0]: r[1] for r in hostel_total_rows}
  
-        # Hostel status breakdown
-        hostel_status_rows = db.session.query(Complaint.hostel_type, Complaint.status, func.count(Complaint.id)).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.status).all()
+        hostel_status_rows = db.session.query(
+            Complaint.hostel_type, Complaint.status, func.count(Complaint.id)
+        ).filter(Complaint.hostel_type != None).group_by(Complaint.hostel_type, Complaint.status).all()
         hostel_status_data = {"boys": {}, "girls": {}}
         for ht, sts, cnt in hostel_status_rows:
             if ht in hostel_status_data:
                 hostel_status_data[ht][sts] = cnt
  
-        # Hostel + Block cross data: {hostel_type: {block: {status: count}}}
         hostel_block_rows = db.session.query(
             Complaint.hostel_type, Complaint.block, Complaint.status, func.count(Complaint.id)
         ).filter(Complaint.hostel_type != None, Complaint.block != None).group_by(
@@ -280,9 +293,7 @@ def welcome():
         hostel_block_data = {"boys": {}, "girls": {}}
         for ht, blk, sts, cnt in hostel_block_rows:
             if ht in hostel_block_data:
-                if blk not in hostel_block_data[ht]:
-                    hostel_block_data[ht][blk] = {}
-                hostel_block_data[ht][blk][sts] = cnt
+                hostel_block_data[ht].setdefault(blk, {})[sts] = cnt
  
         now = datetime.utcnow()
         month_labels, monthly_issued, monthly_resolved = [], [], []
@@ -293,41 +304,58 @@ def welcome():
                 m += 12
                 y -= 1
             month_labels.append(datetime(y, m, 1).strftime("%b %Y"))
-            issued = sum(1 for c in complaints if c.created_at.month == m and c.created_at.year == y)
+            issued   = sum(1 for c in complaints if c.created_at.month == m and c.created_at.year == y)
             resolved = sum(1 for c in complaints if c.status == "Resolved" and c.updated_at.month == m and c.updated_at.year == y)
             monthly_issued.append(issued)
             monthly_resolved.append(resolved)
+ 
     else:
-        complaints = Complaint.query.filter_by(student_email=session["user"]).order_by(Complaint.created_at.desc()).all()
+        complaints = Complaint.query.filter_by(
+            student_email=session["user"]
+        ).order_by(Complaint.created_at.desc()).all()
         cat_labels = cat_counts = month_labels = monthly_issued = monthly_resolved = []
-        pri_dict = {}
-        block_data = {}
+        pri_dict          = {}
+        block_data        = {}
         block_status_data = {}
         hostel_category_data = {}
-        hostel_totals = {}
-        hostel_status_data = {}
-        hostel_block_data = {}
+        hostel_totals        = {}
+        hostel_status_data   = {}
+        hostel_block_data    = {}
  
-    active = len(complaints)
-    pending = sum(1 for c in complaints if c.status == "Pending")
+    active      = len(complaints)
+    pending     = sum(1 for c in complaints if c.status == "Pending")
     in_progress = sum(1 for c in complaints if c.status == "In Progress")
-    resolved = sum(1 for c in complaints if c.status == "Resolved")
+    resolved    = sum(1 for c in complaints if c.status == "Resolved")
  
-    # For admin: total ever (global counter). For student: their own total.
+    # ── FIX: admin sees the live cumulative counter; student sees their own count ──
     if session.get("role") == "admin":
         display_total = IssueCounter.get().total
     else:
-        display_total = active
+        display_total = active   # student: total = their own complaints
  
-    stats = dict(total=display_total, active=active, pending=pending, in_progress=in_progress, resolved=resolved)
+    stats = dict(
+        total=display_total,
+        active=active,
+        pending=pending,
+        in_progress=in_progress,
+        resolved=resolved,
+    )
  
     return render_template(
-        "welcome.html", email=session["user"], full_name=session.get("full_name", ""),
-        role=session.get("role"), complaints=complaints, stats=stats,
-        cat_labels=json.dumps(cat_labels), cat_counts=json.dumps(cat_counts),
-        pri_dict=json.dumps(pri_dict), month_labels=json.dumps(month_labels),
-        monthly_issued=json.dumps(monthly_issued), monthly_resolved=json.dumps(monthly_resolved),
-        block_data=json.dumps(block_data), block_status_data=json.dumps(block_status_data),
+        "welcome.html",
+        email=session["user"],
+        full_name=session.get("full_name", ""),
+        role=session.get("role"),
+        complaints=complaints,
+        stats=stats,
+        cat_labels=json.dumps(cat_labels),
+        cat_counts=json.dumps(cat_counts),
+        pri_dict=json.dumps(pri_dict),
+        month_labels=json.dumps(month_labels),
+        monthly_issued=json.dumps(monthly_issued),
+        monthly_resolved=json.dumps(monthly_resolved),
+        block_data=json.dumps(block_data),
+        block_status_data=json.dumps(block_status_data),
         hostel_category_data=json.dumps(hostel_category_data),
         hostel_totals=json.dumps(hostel_totals),
         hostel_status_data=json.dumps(hostel_status_data),
@@ -350,28 +378,24 @@ def submit_complaint():
     if session.get("role") == "admin":
         return redirect(url_for("welcome"))
  
-    student_name = sanitize_string(request.form.get("name", ""), 120)
-    room_number = sanitize_string(request.form.get("room", ""), 50)
-    hostel_type_raw = (request.form.get("hostel_type") or "").strip().lower()
-    block_raw = (request.form.get("block") or "").strip().upper()
-    category_raw = (request.form.get("category") or "").strip()
-    priority_raw = (request.form.get("priority") or "").strip()
-    description = sanitize_description(request.form.get("description", ""), 500)
+    student_name     = sanitize_string(request.form.get("name", ""), 120)
+    room_number      = sanitize_string(request.form.get("room", ""), 50)
+    hostel_type_raw  = (request.form.get("hostel_type") or "").strip().lower()
+    block_raw        = (request.form.get("block")       or "").strip().upper()
+    category_raw     = (request.form.get("category")   or "").strip()
+    priority_raw     = (request.form.get("priority")   or "").strip()
+    description      = sanitize_description(request.form.get("description", ""), 500)
  
     hostel_type = hostel_type_raw if hostel_type_raw in VALID_HOSTEL_TYPES else None
-    block = block_raw if block_raw in VALID_BLOCKS else None
-    category = category_raw if category_raw in VALID_CATEGORIES else None
-    priority = priority_raw if priority_raw in VALID_PRIORITIES else "Medium"
+    block       = block_raw       if block_raw       in VALID_BLOCKS       else None
+    category    = category_raw    if category_raw    in VALID_CATEGORIES   else None
+    priority    = priority_raw    if priority_raw    in VALID_PRIORITIES   else "Medium"
  
     errors = []
-    if not student_name:
-        errors.append("Student name is required.")
-    if not room_number:
-        errors.append("Room number is required.")
-    if not category:
-        errors.append("Please select a valid category.")
-    if not description:
-        errors.append("Description is required.")
+    if not student_name: errors.append("Student name is required.")
+    if not room_number:  errors.append("Room number is required.")
+    if not category:     errors.append("Please select a valid category.")
+    if not description:  errors.append("Description is required.")
  
     if errors:
         for error in errors:
@@ -379,21 +403,29 @@ def submit_complaint():
         return redirect(url_for("complaint"))
  
     c = Complaint(
-        student_email=session["user"], student_name=student_name, room_number=room_number,
-        hostel_type=hostel_type, block=block, category=category, priority=priority,
-        description=description, status="Pending",
+        student_email=session["user"],
+        student_name=student_name,
+        room_number=room_number,
+        hostel_type=hostel_type,
+        block=block,
+        category=category,
+        priority=priority,
+        description=description,
+        status="Pending",
     )
     db.session.add(c)
-    db.session.flush()
+    db.session.flush()   # get c.id before commit
  
+    # ── FIX: always increment cumulative counter on new submission ──
     counter = IssueCounter.get()
     counter.total += 1
     db.session.commit()
+    # ───────────────────────────────────────────────────────────────
  
     uploaded = request.files.get("image")
     if uploaded and uploaded.filename and uploaded.filename.strip():
         if _allowed_image(uploaded.filename):
-            ext = uploaded.filename.rsplit(".", 1)[1].lower()
+            ext            = uploaded.filename.rsplit(".", 1)[1].lower()
             final_filename = f"{c.id}_{secrets.token_hex(8)}.{ext}"
             uploaded.save(os.path.join(UPLOAD_DIR, final_filename))
             c.image_filename = final_filename
@@ -409,14 +441,14 @@ def submit_complaint():
 @login_required
 @admin_required
 def update_complaint(cid):
-    c = Complaint.query.get_or_404(cid)
+    c          = Complaint.query.get_or_404(cid)
     new_status = (request.form.get("status") or "").strip()
     admin_note = sanitize_description(request.form.get("admin_note", ""), 500)
  
     if new_status in VALID_STATUSES:
         c.status = new_status
-    c.admin_note = admin_note
-    c.updated_at = datetime.utcnow()
+    c.admin_note  = admin_note
+    c.updated_at  = datetime.utcnow()
     db.session.commit()
     flash(f"Complaint #{cid} updated to '{c.status}'.", "success")
     return redirect(url_for("welcome"))
@@ -427,6 +459,8 @@ def update_complaint(cid):
 @admin_required
 def delete_complaint(cid):
     c = Complaint.query.get_or_404(cid)
+ 
+    # Remove associated image file if present
     if c.image_filename:
         img_path = os.path.join(UPLOAD_DIR, c.image_filename)
         if os.path.exists(img_path):
@@ -434,8 +468,11 @@ def delete_complaint(cid):
                 os.remove(img_path)
             except OSError:
                 pass
+ 
     db.session.delete(c)
     db.session.commit()
+    # NOTE: We do NOT decrement IssueCounter — it is intentionally cumulative
+    # (tracks "Total Issues Ever Raised", not current count).
     flash(f"Complaint #{cid} deleted.", "success")
     return redirect(url_for("welcome"))
  
